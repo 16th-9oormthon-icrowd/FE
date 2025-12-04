@@ -14,8 +14,18 @@ ARG VITE_BASE_URL
 ARG VITE_KAKAO_JAVASCRIPT_KEY
 
 # Vite는 빌드 시점에만 ENV를 읽기 때문에 ENV로 전달
-ENV VITE_BASE_URL=$VITE_BASE_URL
-ENV VITE_KAKAO_JAVASCRIPT_KEY=$VITE_KAKAO_JAVASCRIPT_KEY
+ENV VITE_BASE_URL=${VITE_BASE_URL}
+ENV VITE_KAKAO_JAVASCRIPT_KEY=${VITE_KAKAO_JAVASCRIPT_KEY}
+
+# 환경 변수 확인 (빌드 전)
+# 주의: 빌드 로그에 민감한 정보가 출력됩니다
+RUN echo "=== 환경 변수 확인 ===" && \
+    echo "VITE_BASE_URL=${VITE_BASE_URL:-[설정되지 않음]}" && \
+    echo "VITE_KAKAO_JAVASCRIPT_KEY=${VITE_KAKAO_JAVASCRIPT_KEY:-[설정되지 않음]}" && \
+    if [ -n "$VITE_KAKAO_JAVASCRIPT_KEY" ]; then \
+      echo "✓ VITE_KAKAO_JAVASCRIPT_KEY 길이: $(echo -n "$VITE_KAKAO_JAVASCRIPT_KEY" | wc -c)자"; \
+    fi && \
+    echo "======================"
 
 # Build the Vite app
 RUN npm run build
