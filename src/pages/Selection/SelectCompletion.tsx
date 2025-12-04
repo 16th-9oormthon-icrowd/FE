@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useKakaoMap } from '../../hooks/useKakaoMap';
 import type { MarkerData, PlaceData } from '../../hooks/useKakaoMap';
@@ -28,6 +29,7 @@ import question4_2SVG from '../../assets/3/2.svg';
 import question4_3SVG from '../../assets/3/3.svg';
 
 const SelectCompletion = () => {
+  const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState<UserInfoResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [places, setPlaces] = useState<PlaceData[]>([]);
@@ -341,6 +343,7 @@ const SelectCompletion = () => {
             제주도 여행을 떠나볼까요?
           </p>
           <button
+            onClick={() => navigate('/final')}
             disabled={!isAllImagesUploaded()}
             className='w-[160px] h-10 bg-white rounded-[12px] disabled:cursor-not-allowed disabled:bg-[#ffffff]/[0.32]'
           >

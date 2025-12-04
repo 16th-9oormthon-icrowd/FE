@@ -70,4 +70,3 @@ export function generateNickname(): string {
   const randomNoun = nouns[Math.floor(Math.random() * nouns.length)];
   return `${randomVerb} ${randomNoun}`;
 }
-
