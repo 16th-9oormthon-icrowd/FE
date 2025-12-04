@@ -71,8 +71,11 @@ export default defineConfig([
   },
 ]);
 ```
+
 ---
+
 폴더 구조
+
 ```jsx
 Root(/)
 ├── public/ : 파비콘이나 이미지(정적 이미지. 로고같은)
