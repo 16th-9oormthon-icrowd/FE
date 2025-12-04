@@ -338,5 +338,42 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
     });
   }, []);
 
-  return { mapContainer, mapInstance, addMarkerByAddress, updateMarkerColor };
+  // 모든 마커의 중심점으로 지도 이동
+  const moveToCenter = useCallback(() => {
+    if (!mapInstance.current || !window.kakao || !window.kakao.maps) {
+      return;
+    }
+
+    if (markersRef.current.length === 0) {
+      return;
+    }
+
+    let totalLat = 0;
+    let totalLng = 0;
+    let count = 0;
+
+    // 모든 마커의 위치를 수집하여 평균 계산
+    markersRef.current.forEach((marker: unknown) => {
+      const position = (
+        marker as { getPosition: () => { getLat: () => number; getLng: () => number } }
+      ).getPosition();
+      if (position) {
+        totalLat += position.getLat();
+        totalLng += position.getLng();
+        count++;
+      }
+    });
+
+    // 평균 좌표로 중심점 계산
+    if (count > 0) {
+      const centerLat = totalLat / count;
+      const centerLng = totalLng / count;
+      const centerPosition = new window.kakao.maps.LatLng(centerLat, centerLng);
+
+      // 지도 중심 이동
+      (mapInstance.current as { setCenter: (latlng: unknown) => void }).setCenter(centerPosition);
+    }
+  }, []);
+
+  return { mapContainer, mapInstance, addMarkerByAddress, updateMarkerColor, moveToCenter };
 };

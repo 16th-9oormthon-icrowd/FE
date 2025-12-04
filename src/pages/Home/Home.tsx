@@ -65,9 +65,9 @@ const Home = () => {
   // 제주도 관광지 마커 데이터 (예시)
   const markers: MarkerData[] = [];
 
-  const { mapContainer, addMarkerByAddress, updateMarkerColor } = useKakaoMap({
+  const { mapContainer, addMarkerByAddress, updateMarkerColor, moveToCenter } = useKakaoMap({
     center: { lat: 33.450701, lng: 126.570667 }, // 제주도 중심
-    level: 9,
+    level: 11, // 줌 레벨 (1=가장 넓게, 14=가장 좁게)
     markers,
   });
 
@@ -77,19 +77,32 @@ const Home = () => {
 
     // 지도 로드 후 약간의 딜레이를 주고 마커 추가
     const timer = setTimeout(() => {
+      let completedCount = 0;
+      const totalCount = recommendedPlaces.length;
+
+      // 모든 마커를 한번에 추가
       recommendedPlaces.forEach((place, index) => {
+        const placeData: PlaceData = {
+          address: place.address,
+          placeName: place.title,
+        };
+        addMarkerByAddress(placeData, index);
+
+        // 마커 추가 완료 추적 (비동기이므로 약간의 딜레이 후 체크)
         setTimeout(() => {
-          const placeData: PlaceData = {
-            address: place.address,
-            placeName: place.title,
-          };
-          addMarkerByAddress(placeData, index);
-        }, index * 500); // 0.5초 간격으로 순차적으로 추가
+          completedCount++;
+          if (completedCount === totalCount) {
+            // 모든 마커 추가 후 중심으로 이동
+            setTimeout(() => {
+              moveToCenter();
+            }, 500);
+          }
+        }, 100);
       });
     }, 1000); // 지도 로드 후 1초 대기
 
     return () => clearTimeout(timer);
-  }, [addMarkerByAddress, recommendedPlaces]);
+  }, [addMarkerByAddress, recommendedPlaces, moveToCenter]);
 
   // 선택된 인덱스에 따라 마커 색상 실시간 업데이트
   useEffect(() => {
