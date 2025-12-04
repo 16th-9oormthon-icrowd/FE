@@ -12,11 +12,11 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
-            <Route index element={<Home />} />
+            <Route path='/selection/select' element={<Home />} />
             <Route path='/onboarding/completion' element={<Completion />} />
             <Route path='/selection/completion' element={<SelectCompletion />} />
           </Route>
-          <Route path='/onboarding/start' element={<Start />} />
+          <Route index element={<Start />} />
           <Route path='/question' element={<QuestionPage />} />
         </Routes>
       </BrowserRouter>
