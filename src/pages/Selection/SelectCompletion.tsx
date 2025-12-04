@@ -65,9 +65,9 @@ const SelectCompletion = () => {
         <div ref={mapContainer} className='w-full aspect-[67/40] rounded-[12px] mb-10'></div>
         <div className='flex-1 flex flex-col min-h-0'>
           <p className='font-bold text-[18px] mb-[14px]'>관광지를 방문하고 사진을 업로드해보세요</p>
-          <div className='flex-1 flex flex-col gap-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
-            {testPlaces.map((place, index) => (
-              <RecommendPlace key={index} placeName={place.placeName || place.address} address={place.address} />
+          <div className='flexS-1 flex flex-col gap-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
+            {testPlaces.map((_, index) => (
+              <RecommendPlace key={index} />
             ))}
           </div>
         </div>
