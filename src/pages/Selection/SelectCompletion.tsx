@@ -160,8 +160,8 @@ const SelectCompletion = () => {
   }, [addMarkerByAddress, places]);
 
   return (
-    <div className='flex flex-col h-[100dvh] max-h-[100dvh]'>
-      <div className='flex gap-2 pt-8 bg-[#262626] pb-10 -mx-5 px-5'>
+    <div className='flex flex-col h-[100dvh] -mx-5 px-5 bg-[#262626] max-h-[100dvh] '>
+      <div className='flex gap-2 pt-8  pb-10 '>
         <div className='flex flex-col gap-[14px]'>
           <p className='text-white font-bold leading-[1.5]  text-[20px]'>
             {isLoading ? '로딩 중...' : userInfo ? `${userInfo.name}님` : '사용자'} <br />

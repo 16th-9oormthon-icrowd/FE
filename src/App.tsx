@@ -4,6 +4,7 @@ import Home from './pages/Home/Home';
 import QuestionPage from './pages/Question/Question';
 import Completion from './pages/onboarding/Completion';
 import SelectCompletion from './pages/Selection/SelectCompletion';
+import Start from './pages/onboarding/Start';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
             <Route path='/onboarding/completion' element={<Completion />} />
             <Route path='/selection/completion' element={<SelectCompletion />} />
           </Route>
+          <Route path='/onboarding/start' element={<Start />} />
           <Route path='/question' element={<QuestionPage />} />
         </Routes>
       </BrowserRouter>

@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import BlankImage from '../assets/blank.svg?react';
 
 interface RecommendPlaceProps {
   placeName: string;
@@ -38,14 +39,16 @@ const RecommendPlace = ({
 
   return (
     <div className='flex gap-4 '>
-      <div className='w-[104px] aspect-[1/1] bg-[#c4c4c4] rounded-[12px] overflow-hidden'>
-        {uploadedImage && (
+      <div className='w-[104px] aspect-[1/1] rounded-[12px] overflow-hidden'>
+        {uploadedImage ? (
           <img
             src={uploadedImage}
             alt={placeName}
             className='w-full h-full object-cover'
             onError={handleImageError}
           />
+        ) : (
+          <BlankImage className='w-[104px] h-[104px] rounded-[12px]' />
         )}
       </div>
       <div className='flex-1 flex-col'>
