@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Flex, VStack, TextInput, Button } from '@vapor-ui/core';
+import { CheckCircleIcon } from '@vapor-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/api';
 import { AxiosError } from 'axios';
@@ -554,7 +555,7 @@ const Question = () => {
                       relative flex items-center gap-3 h-14 w-full px-6 py-2 rounded-v-400
                       bg-white/40
                       transition-all duration-200
-                      ${isSelected ? 'border-2 border-sky-500' : 'border-0'}
+                      ${isSelected ? 'border-2 border-white' : 'border-0'}
                       hover:shadow-md
                     `}
                   >
@@ -567,12 +568,14 @@ const Question = () => {
                     </p>
                     <Box
                       className={`
-                        shrink-0 size-6 rounded-full border-2
+                        shrink-0 size-6
                         flex justify-center items-center
-                        ${isSelected ? 'bg-blue-500 border-blue-500' : 'bg-white/40 border-white/60'}
                       `}
                     >
-                      {isSelected && <Box className='size-3 rounded-full bg-white' />}
+                      {isSelected && <CheckCircleIcon className='size-6 text-white' />}
+                      {!isSelected && (
+                        <Box className='size-6 rounded-full border-2 bg-white/40 border-white/60' />
+                      )}
                     </Box>
                   </motion.button>
                 );
