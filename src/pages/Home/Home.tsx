@@ -1,5 +1,6 @@
 import { useKakaoMap, type MarkerData, type PlaceData } from '../../hooks/useKakaoMap';
 import { useEffect } from 'react';
+import PlaceCard from '../../components/PlaceCard';
 
 const Home = () => {
   // 제주도 관광지 마커 데이터 (예시)
@@ -42,13 +43,35 @@ const Home = () => {
   }, [addMarkerByAddress]);
 
   return (
-    <>
-      <div className='flex flex-col gap-4 p-4'>
-        <h1 className='text-2xl font-bold'>제주도 관광지도</h1>
-        <p className='text-gray-600'>마커를 클릭하면 자세한 정보를 볼 수 있습니다.</p>
-        <div ref={mapContainer} className='w-full h-[600px] rounded-lg shadow-lg' />
+    <div className='h-[100dvh] max-h-[100dvh] flex flex-col'>
+      <div className='flex flex-col py-8'>
+        <p className='text-2xl font-bold leading-normal mb-3'>
+          나의 취향으로 고른
+          <br />
+          새로운 제주를 준비했어요
+        </p>
+        <p className='text-sm text-gray-500  '>딱 4곳만 선택해 여행의 시작을 완성하세요</p>
       </div>
-    </>
+      <div
+        ref={mapContainer}
+        className='w-full aspect-[67/40] rounded-lg shadow-lg mb-8 shrink-0'
+      />
+      <div className='w-full'>
+        <button className='w-[37px] h-[24px] bg-[#E1E1E1] rounded-[8px] font-500 text-[12px] text-[#393939]'>
+          선택
+        </button>
+      </div>
+      <div className='w-full flex-1 mt-2 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
+        <div className='flex flex-row max-h-[calc(100%-150px)] flex-wrap gap-x-2 gap-y-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
+          {Array.from({ length: 12 }).map((_, index) => (
+            <PlaceCard key={index} />
+          ))}
+        </div>
+      </div>
+      <button className='w-[335px] h-14 bg-[#262626]/[0.32] rounded-[12px] font-medium text-[16px] text-[#ffffff] fixed bottom-[40px] left-1/2 -translate-x-1/2 flex items-center justify-center'>
+        관광지 저장하기
+      </button>
+    </div>
   );
 };
 
