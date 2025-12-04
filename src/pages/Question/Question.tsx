@@ -175,7 +175,7 @@ const Question = () => {
       {/* 선택지 영역 - 하단에 여백 */}
       {currentQuestion.type === 'choice' ? (
         <VStack
-          className='absolute bottom-5 left-1/2 w-full max-w-[375px] -translate-x-1/2 py-5'
+          className='absolute bottom-5 left-1/2 w-full max-w-[375px] -translate-x-1/2 py-5 px-5'
           gap='$100'
           alignItems='center'
         >

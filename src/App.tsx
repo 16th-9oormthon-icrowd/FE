@@ -11,9 +11,9 @@ function App() {
         <Routes>
           <Route element={<Layout />}>
             <Route index element={<Home />} />
-            <Route path='/question' element={<QuestionPage />} />
             <Route path='/onboarding/completion' element={<Completion />} />
           </Route>
+          <Route path='/question' element={<QuestionPage />} />
         </Routes>
       </BrowserRouter>
     </>
