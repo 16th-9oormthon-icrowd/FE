@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { useKakaoMap } from '../../hooks/useKakaoMap';
 import type { MarkerData, PlaceData } from '../../hooks/useKakaoMap';
 import RecommendPlace from '../../components/RecoomentPlace';
@@ -8,6 +9,23 @@ import {
   getVisitJejuContent,
   type UserInfoResponse,
 } from '../../api/api';
+import 기본SVG from '../../assets/기본.svg';
+import eastSVG from '../../assets/east.svg';
+import westSVG from '../../assets/west.svg';
+import southSVG from '../../assets/south.svg';
+import goormSVG from '../../assets/goorm.svg';
+// 2번 질문 SVG
+import question2_1SVG from '../../assets/1/1.svg';
+import question2_2SVG from '../../assets/1/2.svg';
+import question2_3SVG from '../../assets/1/3.svg';
+// 3번 질문 SVG
+import question3_1SVG from '../../assets/2/1.svg';
+import question3_2SVG from '../../assets/2/2.svg';
+import question3_3SVG from '../../assets/2/3.svg';
+// 4번 질문 SVG
+import question4_1SVG from '../../assets/3/1.svg';
+import question4_2SVG from '../../assets/3/2.svg';
+import question4_3SVG from '../../assets/3/3.svg';
 
 const SelectCompletion = () => {
   const [userInfo, setUserInfo] = useState<UserInfoResponse | null>(null);
@@ -152,6 +170,125 @@ const SelectCompletion = () => {
     return validPlacesCount > 0 && uploadedImagesCount >= validPlacesCount;
   };
 
+  // API 응답 값을 A, B, C로 변환
+  const mapApiValueToAnswer = (
+    value: string,
+    type: 'background' | 'personality' | 'activity' | 'worth',
+  ): string | null => {
+    if (type === 'background') {
+      switch (value) {
+        case 'EAST':
+          return 'A';
+        case 'WEST':
+          return 'B';
+        case 'SOUTH':
+          return 'C';
+        default:
+          return null;
+      }
+    }
+    if (type === 'personality') {
+      switch (value) {
+        case 'NOVELTY':
+          return 'A';
+        case 'COMFORT':
+          return 'B';
+        case 'SOCIAL':
+          return 'C';
+        default:
+          return null;
+      }
+    }
+    if (type === 'activity') {
+      switch (value) {
+        case 'ACTIVE':
+          return 'A';
+        case 'QUIET':
+          return 'B';
+        case 'CREATIVE':
+          return 'C';
+        default:
+          return null;
+      }
+    }
+    if (type === 'worth') {
+      switch (value) {
+        case 'PHOTO':
+          return 'A';
+        case 'ECO':
+          return 'B';
+        case 'STORY':
+          return 'C';
+        default:
+          return null;
+      }
+    }
+    return null;
+  };
+
+  // 특정 질문의 SVG 이미지 가져오기
+  const getQuestionSVG = (questionId: number, answer: string | null): string | null => {
+    if (!answer) return null;
+
+    // 1번 질문은 지역 선택 SVG 사용
+    if (questionId === 1) {
+      switch (answer) {
+        case 'A':
+          return eastSVG;
+        case 'B':
+          return westSVG;
+        case 'C':
+          return southSVG;
+        default:
+          return 기본SVG;
+      }
+    }
+
+    // 2번 질문
+    if (questionId === 2) {
+      switch (answer) {
+        case 'A':
+          return question2_1SVG;
+        case 'B':
+          return question2_2SVG;
+        case 'C':
+          return question2_3SVG;
+        default:
+          return null;
+      }
+    }
+
+    // 3번 질문
+    if (questionId === 3) {
+      switch (answer) {
+        case 'A':
+          return question3_1SVG;
+        case 'B':
+          return question3_2SVG;
+        case 'C':
+          return question3_3SVG;
+        default:
+          return null;
+      }
+    }
+
+    // 4번 질문
+    if (questionId === 4) {
+      switch (answer) {
+        case 'A':
+          return question4_1SVG; // question4_1SVG가 없을 경우 기본 SVG 사용
+        case 'B':
+          return question4_2SVG;
+        case 'C':
+          return question4_3SVG;
+        default:
+          return null;
+      }
+    }
+
+    return null;
+  };
+
   useEffect(() => {
     if (places.length === 0) return;
 
@@ -186,7 +323,99 @@ const SelectCompletion = () => {
             여행 완료
           </button>
         </div>
-        <div className='w-[103px] h-[110px] bg-gray-900'></div>
+        <div className='relative w-[103px] h-[110px] flex-shrink-0'>
+          {userInfo && (
+            <>
+              {/* 1번 질문 SVG (동서남) - z-0, goorm보다 아래 */}
+              {(() => {
+                const answer = mapApiValueToAnswer(userInfo.background, 'background');
+                const svg = getQuestionSVG(1, answer);
+                return svg ? (
+                  <div className='absolute inset-0 flex items-center justify-center z-0'>
+                    <motion.img
+                      src={svg}
+                      alt='지역 이미지'
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className='w-full h-full object-contain'
+                      style={{
+                        border: '1px solid rgba(255, 255, 255, 0.12)',
+                        borderRadius: '16px',
+                      }}
+                    />
+                  </div>
+                ) : null;
+              })()}
+
+              {/* goorm SVG 이미지 - z-10 */}
+              <div className='absolute inset-0 flex items-center justify-center z-10'>
+                <motion.img
+                  src={goormSVG}
+                  alt='구름 이미지'
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                  className='w-full h-full object-contain'
+                />
+              </div>
+
+              {/* 2번 질문 SVG - z-20, goorm보다 위 */}
+              {(() => {
+                const answer = mapApiValueToAnswer(userInfo.personality, 'personality');
+                const svg = getQuestionSVG(2, answer);
+                return svg ? (
+                  <div className='absolute inset-0 flex items-center justify-center z-20'>
+                    <motion.img
+                      src={svg}
+                      alt='2번 질문 이미지'
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className='w-full h-full object-contain'
+                    />
+                  </div>
+                ) : null;
+              })()}
+
+              {/* 3번 질문 SVG - z-30 */}
+              {(() => {
+                const answer = mapApiValueToAnswer(userInfo.activity, 'activity');
+                const svg = getQuestionSVG(3, answer);
+                return svg ? (
+                  <div className='absolute inset-0 flex items-center justify-center z-30'>
+                    <motion.img
+                      src={svg}
+                      alt='3번 질문 이미지'
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className='w-full h-full object-contain'
+                    />
+                  </div>
+                ) : null;
+              })()}
+
+              {/* 4번 질문 SVG - z-40 */}
+              {(() => {
+                const answer = mapApiValueToAnswer(userInfo.worth, 'worth');
+                const svg = getQuestionSVG(4, answer);
+                return svg ? (
+                  <div className='absolute inset-0 flex items-center justify-center z-40'>
+                    <motion.img
+                      src={svg}
+                      alt='4번 질문 이미지'
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ duration: 0.3 }}
+                      className='w-full h-full object-contain'
+                    />
+                  </div>
+                ) : null;
+              })()}
+            </>
+          )}
+        </div>
       </div>
       <div className='flex-1 flex flex-col rounded-t-[20px] rounded-b-none -mx-5 px-5 pt-6 pb-6 bg-[#F7F7F8] min-h-0'>
         <p className='font-bold text-[#000000] text-[18px]  mb-[14px]'>
