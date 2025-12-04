@@ -1,3 +1,6 @@
+/* Paperlogy 폰트 CDN - @import는 최상단에 위치해야 함 */
+@import url("https://cdn.jsdelivr.net/gh/fonts-archive/Paperlogy/subsets/Paperlogy-dynamic-subset.css");
+
 * {
   margin: 0;
   padding: 0;
@@ -5,16 +8,18 @@
 }
 
 body {
-  font-family:
-    system-ui,
-    -apple-system,
-    sans-serif;
+  font-family: 'Paperlogy', system-ui, -apple-system, sans-serif !important;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-color: #f5f5f5;
   display: flex;
   justify-content: center;
   min-height: 100vh;
+}
+
+/* 모든 요소에 Paperlogy 폰트 적용 */
+* {
+  font-family: 'Paperlogy', system-ui, -apple-system, sans-serif !important;
 }
 
 #root {
