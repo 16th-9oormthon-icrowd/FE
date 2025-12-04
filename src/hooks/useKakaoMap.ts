@@ -145,6 +145,7 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
         content: content,
         position: markerPosition,
         yAnchor: 1.3,
+        zIndex: 3,
       });
 
       // 마커 클릭 이벤트
