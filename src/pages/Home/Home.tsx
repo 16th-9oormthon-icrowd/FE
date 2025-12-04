@@ -52,6 +52,7 @@ const Home = () => {
           newSet.add(index);
           setSelectionOrder((prevOrder) => {
             const newOrder = new Map(prevOrder);
+            // 선택 순서는 현재 선택된 개수 + 1 (1부터 시작)
             newOrder.set(index, newSet.size);
             return newOrder;
           });
@@ -104,78 +105,107 @@ const Home = () => {
     return `${baseUrl}/selection/completion?name=${encodeURIComponent(userName)}`;
   };
 
-  // 선택된 장소를 순서대로 정렬하여 배열로 반환
-  const getSelectedPlacesInOrder = (): string[] => {
-    // selectionOrder를 순서대로 정렬
-    const sortedEntries = Array.from(selectionOrder.entries()).sort((a, b) => a[1] - b[1]);
-    // 순서대로 정렬된 인덱스의 장소 이름 추출
-    return sortedEntries.map(([index]) => recommendedPlaces[index]?.title || '').filter(Boolean);
+  // 선택된 장소를 배열로 반환
+  const getSelectedPlaces = (): string[] => {
+    if (selectedIndices.size === 0 || recommendedPlaces.length === 0) {
+      return [];
+    }
+
+    // 선택된 인덱스들을 배열로 변환하고 인덱스 순서대로 정렬
+    const sortedIndices = Array.from(selectedIndices).sort((a, b) => a - b);
+
+    // 인덱스에 해당하는 장소 이름 추출
+    return sortedIndices
+      .map((index) => {
+        if (index >= 0 && index < recommendedPlaces.length) {
+          return recommendedPlaces[index]?.title;
+        }
+        return null;
+      })
+      .filter((title): title is string => Boolean(title));
+  };
+
+  // PATCH 요청을 수행하는 공통 함수
+  const patchSelectedPlaces = async (): Promise<boolean> => {
+    const userName = state?.userName;
+    if (!userName) {
+      alert('사용자 이름을 찾을 수 없습니다.');
+      return false;
+    }
+
+    // 선택된 장소를 배열로 변환
+    const selectedPlaces = getSelectedPlaces();
+
+    console.log('=== PATCH 요청 ===');
+    console.log('선택된 인덱스:', Array.from(selectedIndices));
+    console.log('선택된 장소 배열:', selectedPlaces);
+
+    if (selectedPlaces.length !== 4) {
+      alert(`4곳을 모두 선택해주세요. (현재: ${selectedPlaces.length}개)`);
+      return false;
+    }
+
+    const requestUrl = `/api/v1/users/${encodeURIComponent(userName)}/place`;
+    const requestData = { place: selectedPlaces };
+
+    console.log('PATCH 요청 URL:', requestUrl);
+    console.log('PATCH 요청 데이터:', requestData);
+
+    try {
+      // API PATCH 요청
+      const response = await api.patch(requestUrl, requestData);
+
+      console.log('관광지 저장 성공:', response.data);
+      console.log('저장된 장소:', selectedPlaces);
+      return true;
+    } catch (error: unknown) {
+      console.error('관광지 저장 실패:', error);
+      return false;
+    }
   };
 
   // 관광지 저장하기 버튼 클릭 핸들러
   const handleSavePlaces = async () => {
-    const userName = state?.userName;
-    if (!userName) {
-      alert('사용자 이름을 찾을 수 없습니다.');
-      return;
-    }
+    const success = await patchSelectedPlaces();
 
-    // 선택된 장소를 순서대로 배열로 변환
-    const selectedPlaces = getSelectedPlacesInOrder();
+    const userName = state?.userName || '';
+    const shareLink = generateShareLink();
+    const shareData = {
+      title: '제주도 여행 관광지',
+      text: `${userName}의 제주도 여행 관광지를 확인해보세요!`,
+      url: shareLink,
+    };
 
-    if (selectedPlaces.length !== 4) {
-      alert('4곳을 모두 선택해주세요.');
-      return;
-    }
-
+    // 공유 링크 생성 및 공유
     try {
-      // API PATCH 요청
-      await api.patch(`/api/v1/users/${encodeURIComponent(userName)}/place`, {
-        place: selectedPlaces,
-      });
-
-      console.log('관광지 저장 성공:', selectedPlaces);
-
-      // 공유 링크 생성 및 공유
-      const shareLink = generateShareLink();
-      const shareData = {
-        title: '제주도 여행 관광지',
-        text: `${userName}의 제주도 여행 관광지를 확인해보세요!`,
-        url: shareLink,
-      };
-
       // Web Share API 지원 여부 확인
       if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
         await navigator.share(shareData);
       } else {
         // Web Share API를 지원하지 않는 경우 클립보드에 복사
         await navigator.clipboard.writeText(shareLink);
-        alert('관광지가 저장되었고 링크가 클립보드에 복사되었습니다.');
+        alert(
+          success
+            ? '관광지가 저장되었고 링크가 클립보드에 복사되었습니다.'
+            : '관광지 저장에 실패했지만 링크가 클립보드에 복사되었습니다.',
+        );
       }
-    } catch (error: unknown) {
-      console.error('관광지 저장 실패:', error);
-
-      // 공유는 시도 (저장 실패해도 공유는 가능)
-      try {
-        const shareLink = generateShareLink();
-        const shareData = {
-          title: '제주도 여행 관광지',
-          text: `${userName}의 제주도 여행 관광지를 확인해보세요!`,
-          url: shareLink,
-        };
-
-        if (navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-          await navigator.share(shareData);
-        } else {
-          await navigator.clipboard.writeText(shareLink);
-          alert('관광지 저장에 실패했지만 링크가 클립보드에 복사되었습니다.');
-        }
-      } catch (shareError: unknown) {
-        if ((shareError as Error).name !== 'AbortError') {
-          alert('관광지 저장 및 공유에 실패했습니다. 다시 시도해주세요.');
-        }
+    } catch (shareError: unknown) {
+      if ((shareError as Error).name !== 'AbortError') {
+        await navigator.clipboard.writeText(shareLink);
+        alert(
+          success
+            ? '관광지가 저장되었고 링크가 클립보드에 복사되었습니다.'
+            : '관광지 저장에 실패했지만 링크가 클립보드에 복사되었습니다.',
+        );
       }
     }
+  };
+
+  // 지금 여행하기 버튼 클릭 핸들러
+  const handleTravelNow = async () => {
+    await patchSelectedPlaces();
+    navigate('/selection/completion');
   };
 
   return (
@@ -229,10 +259,10 @@ const Home = () => {
               onClick={handleSavePlaces}
               className='flex-1 h-14 bg-white border-1 border-[#C6C6C6] rounded-[12px] font-medium text-[16px] text-[#262626] flex items-center justify-center'
             >
-              관광지 저장하기
+              링크 공유하기
             </button>
             <button
-              onClick={() => navigate('/selection/completion')}
+              onClick={handleTravelNow}
               className='flex-1 h-14 bg-[#262626] border-1 border-[#FFFFFF] rounded-[12px] font-medium text-[16px] text-[#ffffff] flex items-center justify-center'
             >
               지금 여행하기
