@@ -194,7 +194,7 @@ const Question = () => {
         // localStorage에 사용자 이름 저장
         localStorage.setItem('userName', nickname.trim());
 
-        navigate('/', {
+        navigate('/selection/select', {
           state: {
             recommendedPlaces,
             userName: nickname.trim(),
@@ -212,7 +212,7 @@ const Question = () => {
           console.warn('CORS 오류로 응답을 받지 못했지만, 서버 요청은 성공했을 수 있습니다.');
           // localStorage에 사용자 이름 저장
           localStorage.setItem('userName', nickname.trim());
-          navigate('/', {
+          navigate('/selection/select', {
             state: {
               recommendedPlaces: [],
               userName: nickname.trim(),

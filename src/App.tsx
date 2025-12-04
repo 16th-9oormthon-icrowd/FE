@@ -4,6 +4,7 @@ import Home from './pages/Home/Home';
 import QuestionPage from './pages/Question/Question';
 import Completion from './pages/onboarding/Completion';
 import SelectCompletion from './pages/Selection/SelectCompletion';
+import Start from './pages/onboarding/Start';
 
 function App() {
   return (
@@ -11,10 +12,11 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route element={<Layout />}>
-            <Route index element={<Home />} />
+            <Route path='/selection/select' element={<Home />} />
             <Route path='/onboarding/completion' element={<Completion />} />
             <Route path='/selection/completion' element={<SelectCompletion />} />
           </Route>
+          <Route index element={<Start />} />
           <Route path='/question' element={<QuestionPage />} />
         </Routes>
       </BrowserRouter>
