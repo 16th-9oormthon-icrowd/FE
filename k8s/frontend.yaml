@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: 837126493345.dkr.ecr.ap-northeast-2.amazonaws.com/goormthon-4/frontend:build-23
+          image: 837126493345.dkr.ecr.ap-northeast-2.amazonaws.com/goormthon-4/frontend:build-26
           ports:
             - containerPort: 80
               protocol: TCP
