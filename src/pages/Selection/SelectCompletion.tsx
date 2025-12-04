@@ -48,7 +48,8 @@ const SelectCompletion = () => {
     [markers],
   );
 
-  const { mapContainer, addMarkerByAddress, moveToCenter } = useKakaoMap(mapOptions);
+  const { mapContainer, addMarkerByAddress, updateMarkerColor, moveToCenter } =
+    useKakaoMap(mapOptions);
 
   // 사용자 정보 불러오기
   useEffect(() => {
@@ -325,14 +326,17 @@ const SelectCompletion = () => {
         addMarkerByAddress(place, index);
       });
 
-      // 모든 마커가 로드될 시간을 주고 중앙으로 이동
+      // 모든 마커가 로드된 후 주황색(sel.svg)으로 업데이트
       setTimeout(() => {
+        places.forEach((_, index) => {
+          updateMarkerColor(index, true); // 모든 마커를 선택된 상태로 표시
+        });
         moveToCenter();
       }, 2000);
     }, 1000); // 지도 로드 후 1초 대기
 
     return () => clearTimeout(timer);
-  }, [addMarkerByAddress, places, moveToCenter]);
+  }, [addMarkerByAddress, updateMarkerColor, places, moveToCenter]);
 
   return (
     <div className='flex flex-col h-[100dvh] -mx-5 px-5 bg-[#262626] max-h-[100dvh] '>
