@@ -1,4 +1,6 @@
 import { useEffect, useRef, useCallback } from 'react';
+import selSvg from '../assets/sel.svg';
+import unselSvg from '../assets/unsel.svg';
 
 export interface MarkerData {
   position: {
@@ -116,10 +118,10 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
         MarkerImage: new (src: string, size: unknown, options: unknown) => unknown;
       };
 
-      const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 32 40"><path d="M16 0C7.164 0 0 7.164 0 16c0 8.837 16 24 16 24s16-15.163 16-24C32 7.164 24.836 0 16 0z" fill="#9E9E9E"/><circle cx="16" cy="16" r="5" fill="white"/></svg>`;
-      const imageSrc = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markerSvg)}`;
-      const imageSize = new kakaoMaps.Size(16, 20);
-      const imageOption = { offset: new kakaoMaps.Point(8, 20) };
+      // 기본적으로 unsel.svg 사용
+      const imageSrc = unselSvg;
+      const imageSize = new kakaoMaps.Size(40, 52);
+      const imageOption = { offset: new kakaoMaps.Point(20, 52) };
       const markerImage = new kakaoMaps.MarkerImage(imageSrc, imageSize, imageOption);
 
       const marker = new window.kakao.maps.Marker({
@@ -221,7 +223,7 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
     }
   }, [options?.markers]);
 
-  // 마커 색상 변경 함수
+  // 마커 이미지 변경 함수 (sel.svg / unsel.svg)
   const updateMarkerColor = useCallback((index: number, isSelected: boolean) => {
     if (!window.kakao || !window.kakao.maps) return;
 
@@ -234,12 +236,10 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
       MarkerImage: new (src: string, size: unknown, options: unknown) => unknown;
     };
 
-    // 선택된 경우 주황색, 선택 해제된 경우 회색
-    const fillColor = isSelected ? '#FF8C00' : '#9E9E9E';
-    const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="26" viewBox="0 0 32 40"><path d="M16 0C7.164 0 0 7.164 0 16c0 8.837 16 24 16 24s16-15.163 16-24C32 7.164 24.836 0 16 0z" fill="${fillColor}"/><circle cx="16" cy="16" r="6" fill="white"/></svg>`;
-    const imageSrc = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markerSvg)}`;
-    const imageSize = new kakaoMaps.Size(20, 26);
-    const imageOption = { offset: new kakaoMaps.Point(10, 26) };
+    // 선택된 경우 sel.svg, 선택 해제된 경우 unsel.svg
+    const imageSrc = isSelected ? selSvg : unselSvg;
+    const imageSize = new kakaoMaps.Size(40, 52);
+    const imageOption = { offset: new kakaoMaps.Point(20, 52) };
     const markerImage = new kakaoMaps.MarkerImage(imageSrc, imageSize, imageOption);
 
     (marker as { setImage: (image: unknown) => void }).setImage(markerImage);
@@ -312,11 +312,10 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
               MarkerImage: new (src: string, size: unknown, options: unknown) => unknown;
             };
 
-            const markerColor = options?.defaultMarkerColor || '#9E9E9E';
-            const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="26" viewBox="0 0 32 40"><path d="M16 0C7.164 0 0 7.164 0 16c0 8.837 16 24 16 24s16-15.163 16-24C32 7.164 24.836 0 16 0z" fill="${markerColor}"/><circle cx="16" cy="16" r="6" fill="white"/></svg>`;
-            const imageSrc = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markerSvg)}`;
-            const imageSize = new kakaoMaps.Size(20, 26);
-            const imageOption = { offset: new kakaoMaps.Point(10, 26) };
+            // 기본적으로 unsel.svg 사용
+            const imageSrc = unselSvg;
+            const imageSize = new kakaoMaps.Size(40, 52);
+            const imageOption = { offset: new kakaoMaps.Point(20, 52) };
             const markerImage = new kakaoMaps.MarkerImage(imageSrc, imageSize, imageOption);
 
             // 마커 생성
