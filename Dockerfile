@@ -2,26 +2,24 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
 # Install dependencies
-RUN npm ci --only=production=false
+COPY package*.json ./
+RUN npm ci
 
-# Copy source code
+# Copy all source files
 COPY . .
 
-# Define and pass build-time environment variables
+# --- Vite 빌드용 ARG (빌드 시 docker build --build-arg 로 전달해야 함) ---
 ARG VITE_BASE_URL
 ARG VITE_KAKAO_JAVASCRIPT_KEY
-ENV VITE_BASE_URL=${VITE_BASE_URL}
-ENV VITE_KAKAO_JAVASCRIPT_KEY=${VITE_KAKAO_JAVASCRIPT_KEY}
 
-# Build the application
+# Vite는 빌드 시점에만 ENV를 읽기 때문에 ENV로 전달
+ENV VITE_BASE_URL=$VITE_BASE_URL
+ENV VITE_KAKAO_JAVASCRIPT_KEY=$VITE_KAKAO_JAVASCRIPT_KEY
+
+# Build the Vite app
 RUN npm run build
 
-# Verify build output exists
-RUN test -d dist && test -f dist/index.html || (echo "Build failed: dist directory or index.html not found" && exit 1)
 
 # 비root 사용자 생성 및 권한 설정
 RUN addgroup -g 1001 -S nodejs && \
