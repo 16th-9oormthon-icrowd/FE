@@ -112,9 +112,12 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
         title: markerData.title,
       });
 
-      const infowindow = new window.kakao.maps.InfoWindow({
-        content: `<div style="position:relative;padding:25px 20px 20px 20px;min-width:280px;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-          <button onclick="this.parentElement.parentElement.parentElement.style.display='none'" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;color:#999;cursor:pointer;padding:0;width:24px;height:24px;line-height:20px;">×</button>
+      // 고유 ID 생성
+      const overlayId = `overlay-${Date.now()}-${Math.random()}`;
+
+      const content = document.createElement('div');
+      content.innerHTML = `<div style="position:relative;padding:25px 20px 20px 20px;min-width:280px;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+          <button class="overlay-close-btn" data-overlay-id="${overlayId}" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;color:#999;cursor:pointer;padding:0;width:24px;height:24px;line-height:20px;">×</button>
           <div style="margin-bottom:15px;">
             <h3 style="margin:0 0 8px 0;font-size:18px;font-weight:bold;color:#000;">${markerData.title}</h3>
             <p style="margin:0;font-size:13px;color:#666;line-height:1.6;">${markerData.content}</p>
@@ -131,22 +134,44 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
               길찾기
             </a>
           </div>
-        </div>`,
+        </div>`;
+
+      const customOverlay = new (
+        window.kakao.maps as typeof window.kakao.maps & {
+          CustomOverlay: new (options: unknown) => unknown;
+        }
+      ).CustomOverlay({
+        content: content,
+        position: markerPosition,
+        yAnchor: 1.3,
       });
 
       // 마커 클릭 이벤트
       window.kakao.maps.event.addListener(marker, 'click', () => {
-        // 다른 인포윈도우 닫기
-        infowindowsRef.current.forEach((iw: unknown) => {
-          (iw as { close: () => void }).close();
+        // 다른 오버레이 닫기
+        infowindowsRef.current.forEach((overlay: unknown) => {
+          (overlay as { setMap: (map: null) => void }).setMap(null);
         });
-        // 현재 인포윈도우 열기
-        infowindow.open(mapInstance.current, marker);
+        // 현재 오버레이 열기
+        (customOverlay as { setMap: (map: unknown) => void }).setMap(mapInstance.current);
+
+        // 지도 중심을 마커 위치로 이동
+        (mapInstance.current as { panTo: (latlng: unknown) => void }).panTo(markerPosition);
+
+        // 닫기 버튼 이벤트 리스너 추가
+        setTimeout(() => {
+          const closeBtn = document.querySelector(`[data-overlay-id="${overlayId}"]`);
+          if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+              (customOverlay as { setMap: (map: null) => void }).setMap(null);
+            });
+          }
+        }, 0);
       });
 
       marker.setMap(mapInstance.current);
       markersRef.current.push(marker);
-      infowindowsRef.current.push(infowindow);
+      infowindowsRef.current.push(customOverlay);
     });
   }, [options?.markers]);
 
@@ -209,14 +234,15 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
               title: placeInfo.title,
             });
 
-            // 인포윈도우 생성
-            const infowindow = new window.kakao.maps.InfoWindow({
-              content: `<div style="position:relative;padding:25px 20px 20px 20px;min-width:280px;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-                <button onclick="this.parentElement.parentElement.parentElement.style.display='none'" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;color:#999;cursor:pointer;padding:0;width:24px;height:24px;line-height:20px;">×</button>
+            // 고유 ID 생성
+            const overlayId = `overlay-${Date.now()}-${Math.random()}`;
+
+            const content = document.createElement('div');
+            content.innerHTML = `<div style="position:relative;padding:25px 20px 20px 20px;min-width:280px;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+                <button class="overlay-close-btn" data-overlay-id="${overlayId}" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;color:#999;cursor:pointer;padding:0;width:24px;height:24px;line-height:20px;">×</button>
                 <div style="margin-bottom:15px;">
                   <h3 style="margin:0 0 8px 0;font-size:18px;font-weight:bold;color:#000;">${placeInfo.title}</h3>
                   <p style="margin:0;font-size:13px;color:#666;line-height:1.6;">${placeInfo.content}</p>
-                  ${placeInfo.phone ? `<p style="margin:8px 0 0 0;font-size:13px;color:#666;">📞 ${placeInfo.phone}</p>` : ''}
                 </div>
                 <div style="display:flex;gap:10px;">
                   <a href="https://map.kakao.com/link/map/${encodeURIComponent(placeInfo.title)},${lat},${lng}"
@@ -230,20 +256,42 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
                     길찾기
                   </a>
                 </div>
-              </div>`,
+              </div>`;
+
+            const customOverlay = new (
+              window.kakao.maps as typeof window.kakao.maps & {
+                CustomOverlay: new (options: unknown) => unknown;
+              }
+            ).CustomOverlay({
+              content: content,
+              position: position,
+              yAnchor: 1.3,
             });
 
             // 마커 클릭 이벤트
             window.kakao.maps.event.addListener(marker, 'click', () => {
-              infowindowsRef.current.forEach((iw: unknown) => {
-                (iw as { close: () => void }).close();
+              infowindowsRef.current.forEach((overlay: unknown) => {
+                (overlay as { setMap: (map: null) => void }).setMap(null);
               });
-              infowindow.open(mapInstance.current, marker);
+              (customOverlay as { setMap: (map: unknown) => void }).setMap(mapInstance.current);
+
+              // 지도 중심을 마커 위치로 이동
+              (mapInstance.current as { panTo: (latlng: unknown) => void }).panTo(position);
+
+              // 닫기 버튼 이벤트 리스너 추가
+              setTimeout(() => {
+                const closeBtn = document.querySelector(`[data-overlay-id="${overlayId}"]`);
+                if (closeBtn) {
+                  closeBtn.addEventListener('click', () => {
+                    (customOverlay as { setMap: (map: null) => void }).setMap(null);
+                  });
+                }
+              }, 0);
             });
 
             marker.setMap(mapInstance.current);
             markersRef.current.push(marker);
-            infowindowsRef.current.push(infowindow);
+            infowindowsRef.current.push(customOverlay);
 
             // 지도 중심을 해당 위치로 이동
             (mapInstance.current as { setCenter: (latlng: unknown) => void }).setCenter(position);
