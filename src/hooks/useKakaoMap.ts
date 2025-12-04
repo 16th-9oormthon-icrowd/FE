@@ -19,6 +19,7 @@ interface KakaoMapOptions {
   };
   level?: number;
   markers?: MarkerData[];
+  defaultMarkerColor?: string; // 기본 마커 색상 (기본값: #9E9E9E)
 }
 
 export interface PlaceData {
@@ -46,7 +47,7 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
     // 기본 옵션
     const defaultCenter = { lat: 33.450701, lng: 126.570667 }; // 제주도
     const center = options?.center || defaultCenter;
-    const level = options?.level || 9;
+    const level = options?.level || 13;
 
     // 카카오맵 초기화 함수
     const initMap = () => {
@@ -108,30 +109,44 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
         markerData.position.lng,
       );
 
+      // 커스텀 마커 이미지 생성 (SVG)
+      const kakaoMaps = window.kakao.maps as typeof window.kakao.maps & {
+        Size: new (width: number, height: number) => unknown;
+        Point: new (x: number, y: number) => unknown;
+        MarkerImage: new (src: string, size: unknown, options: unknown) => unknown;
+      };
+
+      const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 32 40"><path d="M16 0C7.164 0 0 7.164 0 16c0 8.837 16 24 16 24s16-15.163 16-24C32 7.164 24.836 0 16 0z" fill="#9E9E9E"/><circle cx="16" cy="16" r="5" fill="white"/></svg>`;
+      const imageSrc = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markerSvg)}`;
+      const imageSize = new kakaoMaps.Size(16, 20);
+      const imageOption = { offset: new kakaoMaps.Point(8, 20) };
+      const markerImage = new kakaoMaps.MarkerImage(imageSrc, imageSize, imageOption);
+
       const marker = new window.kakao.maps.Marker({
         position: markerPosition,
         title: markerData.title,
+        image: markerImage,
       });
 
       // 고유 ID 생성
       const overlayId = `overlay-${Date.now()}-${Math.random()}`;
 
       const content = document.createElement('div');
-      content.innerHTML = `<div style="position:relative;padding:25px 20px 20px 20px;min-width:280px;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-          <button class="overlay-close-btn" data-overlay-id="${overlayId}" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;color:#999;cursor:pointer;padding:0;width:24px;height:24px;line-height:20px;">×</button>
-          <div style="margin-bottom:15px;">
-            <h3 style="margin:0 0 8px 0;font-size:18px;font-weight:bold;color:#000;">${markerData.title}</h3>
-            <p style="margin:0;font-size:13px;color:#666;line-height:1.6;">${markerData.content}</p>
+      content.innerHTML = `<div style="position:relative;padding:16px 14px 14px 14px;min-width:200px;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+          <button class="overlay-close-btn" data-overlay-id="${overlayId}" style="position:absolute;top:6px;right:6px;background:none;border:none;font-size:18px;color:#999;cursor:pointer;padding:0;width:20px;height:20px;line-height:18px;">×</button>
+          <div style="margin-bottom:10px;">
+            <h3 style="margin:0 0 6px 0;font-size:15px;font-weight:bold;color:#000;">${markerData.title}</h3>
+            <p style="margin:0;font-size:12px;color:#666;line-height:1.4;">${markerData.content}</p>
           </div>
-          <div style="display:flex;gap:10px;">
+          <div style="display:flex;gap:6px;">
             <a href="https://map.kakao.com/link/map/${encodeURIComponent(markerData.title)},${markerData.position.lat},${markerData.position.lng}"
                target="_blank"
-               style="flex:1;padding:10px 0;background-color:#FEE500;color:#000;text-decoration:none;border-radius:6px;font-size:14px;font-weight:700;text-align:center;display:block;">
+               style="flex:1;padding:8px 0;background-color:#FEE500;color:#000;text-decoration:none;border-radius:6px;font-size:12px;font-weight:600;text-align:center;display:block;">
               큰 지도 보기
             </a>
             <a href="https://map.kakao.com/link/to/${encodeURIComponent(markerData.title)},${markerData.position.lat},${markerData.position.lng}"
                target="_blank"
-               style="flex:1;padding:10px 0;background-color:#4A90E2;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:700;text-align:center;display:block;">
+               style="flex:1;padding:8px 0;background-color:#4A90E2;color:#fff;text-decoration:none;border-radius:6px;font-size:12px;font-weight:600;text-align:center;display:block;">
               길찾기
             </a>
           </div>
@@ -175,6 +190,35 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
       markersRef.current.push(marker);
       infowindowsRef.current.push(customOverlay);
     });
+
+    // 모든 마커가 로드된 후 지도를 중앙에 위치
+    if (markersRef.current.length > 0) {
+      setTimeout(() => {
+        let totalLat = 0;
+        let totalLng = 0;
+        let count = 0;
+
+        markersRef.current.forEach((marker: unknown) => {
+          const position = (
+            marker as { getPosition: () => { getLat: () => number; getLng: () => number } }
+          ).getPosition();
+          if (position) {
+            totalLat += position.getLat();
+            totalLng += position.getLng();
+            count++;
+          }
+        });
+
+        if (count > 0) {
+          const centerLat = totalLat / count;
+          const centerLng = totalLng / count;
+          const centerPosition = new window.kakao.maps.LatLng(centerLat, centerLng);
+          (mapInstance.current as { setCenter: (latlng: unknown) => void }).setCenter(
+            centerPosition,
+          );
+        }
+      }, 100);
+    }
   }, [options?.markers]);
 
   // 마커 색상 변경 함수
@@ -184,22 +228,28 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
     const marker = markerIndexMap.current.get(index);
     if (!marker) return;
 
-    // 선택된 경우 빨간색, 선택 해제된 경우 기본 색상
-    const imageSrc = isSelected
-      ? 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png'
-      : 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker.png';
-
     const kakaoMaps = window.kakao.maps as typeof window.kakao.maps & {
       Size: new (width: number, height: number) => unknown;
       Point: new (x: number, y: number) => unknown;
       MarkerImage: new (src: string, size: unknown, options: unknown) => unknown;
     };
 
-    const imageSize = new kakaoMaps.Size(24, 35);
-    const imageOption = { offset: new kakaoMaps.Point(12, 35) };
+    // 선택된 경우 주황색, 선택 해제된 경우 회색
+    const fillColor = isSelected ? '#FF8C00' : '#9E9E9E';
+    const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="26" viewBox="0 0 32 40"><path d="M16 0C7.164 0 0 7.164 0 16c0 8.837 16 24 16 24s16-15.163 16-24C32 7.164 24.836 0 16 0z" fill="${fillColor}"/><circle cx="16" cy="16" r="6" fill="white"/></svg>`;
+    const imageSrc = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markerSvg)}`;
+    const imageSize = new kakaoMaps.Size(20, 26);
+    const imageOption = { offset: new kakaoMaps.Point(10, 26) };
     const markerImage = new kakaoMaps.MarkerImage(imageSrc, imageSize, imageOption);
 
     (marker as { setImage: (image: unknown) => void }).setImage(markerImage);
+
+    // 선택된 마커의 z-index를 10으로 높여서 맨 앞으로, 해제된 마커는 1로
+    if (isSelected) {
+      (marker as unknown as { setZIndex: (zIndex: number) => void }).setZIndex(10);
+    } else {
+      (marker as unknown as { setZIndex: (zIndex: number) => void }).setZIndex(1);
+    }
   }, []);
 
   // 주소로 마커 추가하는 함수 (인덱스 포함)
@@ -255,10 +305,25 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
               };
             }
 
+            // 커스텀 마커 이미지 생성 (SVG)
+            const kakaoMaps = window.kakao.maps as typeof window.kakao.maps & {
+              Size: new (width: number, height: number) => unknown;
+              Point: new (x: number, y: number) => unknown;
+              MarkerImage: new (src: string, size: unknown, options: unknown) => unknown;
+            };
+
+            const markerColor = options?.defaultMarkerColor || '#9E9E9E';
+            const markerSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="26" viewBox="0 0 32 40"><path d="M16 0C7.164 0 0 7.164 0 16c0 8.837 16 24 16 24s16-15.163 16-24C32 7.164 24.836 0 16 0z" fill="${markerColor}"/><circle cx="16" cy="16" r="6" fill="white"/></svg>`;
+            const imageSrc = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(markerSvg)}`;
+            const imageSize = new kakaoMaps.Size(20, 26);
+            const imageOption = { offset: new kakaoMaps.Point(10, 26) };
+            const markerImage = new kakaoMaps.MarkerImage(imageSrc, imageSize, imageOption);
+
             // 마커 생성
             const marker = new window.kakao.maps.Marker({
               position: position,
               title: placeInfo.title,
+              image: markerImage,
             });
 
             // 인덱스가 제공된 경우 마커를 인덱스와 매핑
@@ -270,21 +335,21 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
             const overlayId = `overlay-${Date.now()}-${Math.random()}`;
 
             const content = document.createElement('div');
-            content.innerHTML = `<div style="position:relative;padding:25px 20px 20px 20px;min-width:280px;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
-                <button class="overlay-close-btn" data-overlay-id="${overlayId}" style="position:absolute;top:8px;right:8px;background:none;border:none;font-size:20px;color:#999;cursor:pointer;padding:0;width:24px;height:24px;line-height:20px;">×</button>
-                <div style="margin-bottom:15px;">
-                  <h3 style="margin:0 0 8px 0;font-size:18px;font-weight:bold;color:#000;">${placeInfo.title}</h3>
-                  <p style="margin:0;font-size:13px;color:#666;line-height:1.6;">${placeInfo.content}</p>
+            content.innerHTML = `<div style="position:relative;padding:16px 14px 14px 14px;min-width:200px;font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+                <button class="overlay-close-btn" data-overlay-id="${overlayId}" style="position:absolute;top:6px;right:6px;background:none;border:none;font-size:18px;color:#999;cursor:pointer;padding:0;width:20px;height:20px;line-height:18px;">×</button>
+                <div style="margin-bottom:10px;">
+                  <h3 style="margin:0 0 6px 0;font-size:15px;font-weight:bold;color:#000;">${placeInfo.title}</h3>
+                  <p style="margin:0;font-size:12px;color:#666;line-height:1.4;">${placeInfo.content}</p>
                 </div>
-                <div style="display:flex;gap:10px;">
+                <div style="display:flex;gap:6px;">
                   <a href="https://map.kakao.com/link/map/${encodeURIComponent(placeInfo.title)},${lat},${lng}"
                      target="_blank"
-                     style="flex:1;padding:10px 0;background-color:#FEE500;color:#000;text-decoration:none;border-radius:6px;font-size:14px;font-weight:700;text-align:center;display:block;">
+                     style="flex:1;padding:8px 0;background-color:#FEE500;color:#000;text-decoration:none;border-radius:6px;font-size:12px;font-weight:600;text-align:center;display:block;">
                     큰 지도 보기
                   </a>
                   <a href="https://map.kakao.com/link/to/${encodeURIComponent(placeInfo.title)},${lat},${lng}"
                      target="_blank"
-                     style="flex:1;padding:10px 0;background-color:#4A90E2;color:#fff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:700;text-align:center;display:block;">
+                     style="flex:1;padding:8px 0;background-color:#4A90E2;color:#fff;text-decoration:none;border-radius:6px;font-size:12px;font-weight:600;text-align:center;display:block;">
                     길찾기
                   </a>
                 </div>

@@ -62,14 +62,21 @@ const Home = () => {
     });
   };
 
-  // 제주도 관광지 마커 데이터 (예시)
-  const markers: MarkerData[] = [];
+  // 제주도 관광지 마커 데이터 (예시) - useMemo로 참조 유지
+  const markers: MarkerData[] = useMemo(() => [], []);
 
-  const { mapContainer, addMarkerByAddress, updateMarkerColor, moveToCenter } = useKakaoMap({
-    center: { lat: 33.450701, lng: 126.570667 }, // 제주도 중심
-    level: 11, // 줌 레벨 (1=가장 넓게, 14=가장 좁게)
-    markers,
-  });
+  // useKakaoMap options를 useMemo로 메모이제이션하여 불필요한 리렌더링 방지
+  const mapOptions = useMemo(
+    () => ({
+      center: { lat: 33.450701, lng: 126.570667 }, // 제주도 중심
+      level: 11, // 줌 레벨 (1=가장 넓게, 14=가장 좁게)
+      markers,
+    }),
+    [markers],
+  );
+
+  const { mapContainer, addMarkerByAddress, updateMarkerColor, moveToCenter } =
+    useKakaoMap(mapOptions);
 
   // API 응답 데이터를 PlaceData 형식으로 변환하여 지도에 마커 추가
   useEffect(() => {
