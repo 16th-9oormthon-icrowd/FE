@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Flex, VStack, TextInput, Button } from '@vapor-ui/core';
+import { CheckCircleIcon } from '@vapor-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/api';
 import { AxiosError } from 'axios';
+import { generateNickname } from '../../utils/nicknameGenerator';
 import 기본SVG from '../../assets/기본.svg';
 import eastSVG from '../../assets/east.svg';
 import westSVG from '../../assets/west.svg';
@@ -234,6 +236,13 @@ const Question = () => {
     }
   };
 
+  // 닉네임 입력 화면으로 전환될 때 자동으로 닉네임 생성
+  useEffect(() => {
+    if (currentQuestion.type === 'text' && !nickname) {
+      setNickname(generateNickname());
+    }
+  }, [currentQuestion.type, nickname]);
+
   // 선택된 지역에 따라 배경색 결정
   const getBackgroundGradient = (): string => {
     const selectedRegion = answers[0]; // 첫 번째 질문의 답변 (지역 선택)
@@ -390,13 +399,15 @@ const Question = () => {
         </VStack>
       )}
 
-      {/* 모든 질문 SVG 이미지 - bottom 45% 위치, z-index 순서: 기본/1번 < goorm < 2번 < 3번 < 4번 */}
-      {currentQuestion.type === 'choice' && (
+      {/* 모든 질문 SVG 이미지 - bottom 45% 위치 (닉네임 입력 화면은 50%), z-index 순서: 기본/1번 < goorm < 2번 < 3번 < 4번 */}
+      {(currentQuestion.type === 'choice' || currentQuestion.type === 'text') && (
         <>
           {/* 기본 SVG - z-0, goorm보다 아래, 동서남 선택 전에만 표시 */}
           {!answers[0] && (
             <Box
-              className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-0'
+              className={`absolute left-1/2 -translate-x-1/2 z-0 ${
+                currentQuestion.type === 'text' ? 'bottom-[50%]' : 'bottom-[45%]'
+              }`}
               style={{ pointerEvents: 'none' }}
             >
               <motion.img
@@ -415,7 +426,9 @@ const Question = () => {
           {/* 1번 질문 SVG (동서남) - z-0, goorm보다 아래 */}
           {answers[0] && getQuestionSVG(1, answers[0]) && (
             <Box
-              className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-0'
+              className={`absolute left-1/2 -translate-x-1/2 z-0 ${
+                currentQuestion.type === 'text' ? 'bottom-[50%]' : 'bottom-[45%]'
+              }`}
               style={{ pointerEvents: 'none' }}
             >
               <motion.img
@@ -436,7 +449,9 @@ const Question = () => {
 
           {/* goorm SVG 이미지 - z-10 */}
           <Box
-            className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-10'
+            className={`absolute left-1/2 -translate-x-1/2 z-10 ${
+              currentQuestion.type === 'text' ? 'bottom-[50%]' : 'bottom-[45%]'
+            }`}
             style={{ pointerEvents: 'none' }}
           >
             <motion.img
@@ -452,7 +467,9 @@ const Question = () => {
           {/* 2번 질문 SVG - z-20, goorm보다 위 */}
           {answers[1] && getQuestionSVG(2, answers[1]) && (
             <Box
-              className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-20'
+              className={`absolute left-1/2 -translate-x-1/2 z-20 ${
+                currentQuestion.type === 'text' ? 'bottom-[50%]' : 'bottom-[45%]'
+              }`}
               style={{ pointerEvents: 'none' }}
             >
               <motion.img
@@ -470,7 +487,9 @@ const Question = () => {
           {/* 3번 질문 SVG - z-30 */}
           {answers[2] && getQuestionSVG(3, answers[2]) && (
             <Box
-              className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-30'
+              className={`absolute left-1/2 -translate-x-1/2 z-30 ${
+                currentQuestion.type === 'text' ? 'bottom-[50%]' : 'bottom-[45%]'
+              }`}
               style={{ pointerEvents: 'none' }}
             >
               <motion.img
@@ -488,7 +507,9 @@ const Question = () => {
           {/* 4번 질문 SVG - z-40 */}
           {answers[3] && getQuestionSVG(4, answers[3]) && (
             <Box
-              className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-40'
+              className={`absolute left-1/2 -translate-x-1/2 z-40 ${
+                currentQuestion.type === 'text' ? 'bottom-[50%]' : 'bottom-[45%]'
+              }`}
               style={{ pointerEvents: 'none' }}
             >
               <motion.img
@@ -534,7 +555,7 @@ const Question = () => {
                       relative flex items-center gap-3 h-14 w-full px-6 py-2 rounded-v-400
                       bg-white/40
                       transition-all duration-200
-                      ${isSelected ? 'border-2 border-sky-500' : 'border-0'}
+                      ${isSelected ? 'border-2 border-white' : 'border-0'}
                       hover:shadow-md
                     `}
                   >
@@ -547,12 +568,14 @@ const Question = () => {
                     </p>
                     <Box
                       className={`
-                        shrink-0 size-6 rounded-full border-2
+                        shrink-0 size-6
                         flex justify-center items-center
-                        ${isSelected ? 'bg-blue-500 border-blue-500' : 'bg-white/40 border-white/60'}
                       `}
                     >
-                      {isSelected && <Box className='size-3 rounded-full bg-white' />}
+                      {isSelected && <CheckCircleIcon className='size-6 text-white' />}
+                      {!isSelected && (
+                        <Box className='size-6 rounded-full border-2 bg-white/40 border-white/60' />
+                      )}
                     </Box>
                   </motion.button>
                 );
@@ -599,7 +622,7 @@ const Question = () => {
                 >
                   {/* 툴팁 */}
                   <Box
-                    className='bg-[#393939] rounded-v-300'
+                    className='w-full bg-[#393939] rounded-v-300'
                     style={{
                       paddingTop: 'var(--vapor-size-space-150, 12px)',
                       paddingBottom: 'var(--vapor-size-space-150, 12px)',
@@ -625,7 +648,11 @@ const Question = () => {
                       }
                     }}
                     size='md'
-                    className='h-14 rounded-v-300 text-center bg-white/40'
+                    className='w-full h-14 rounded-v-300 text-center bg-white/40 text-white placeholder:text-white/60 focus:outline-none focus:ring-0 border border-white'
+                    style={{
+                      color: 'white',
+                      borderColor: 'white',
+                    }}
                   />
                 </VStack>
 
