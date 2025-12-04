@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useKakaoMap } from '../../hooks/useKakaoMap';
 import type { MarkerData, PlaceData } from '../../hooks/useKakaoMap';
 import RecommendPlace from '../../components/RecoomentPlace';
@@ -13,13 +13,22 @@ const SelectCompletion = () => {
   const [userInfo, setUserInfo] = useState<UserInfoResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [places, setPlaces] = useState<PlaceData[]>([]);
-  const markers: MarkerData[] = [];
 
-  const { mapContainer, addMarkerByAddress } = useKakaoMap({
-    center: { lat: 33.450701, lng: 126.570667 }, // 제주도 중심
-    level: 9,
-    markers,
-  });
+  // 마커 데이터를 useMemo로 감싸기
+  const markers: MarkerData[] = useMemo(() => [], []);
+
+  // useKakaoMap options를 useMemo로 메모이제이션
+  const mapOptions = useMemo(
+    () => ({
+      center: { lat: 33.450701, lng: 126.570667 }, // 제주도 중심
+      level: 11,
+      markers,
+      defaultMarkerColor: '#FF8C00', // 주황색 마커 고정
+    }),
+    [markers],
+  );
+
+  const { mapContainer, addMarkerByAddress, moveToCenter } = useKakaoMap(mapOptions);
 
   // 사용자 정보 불러오기
   useEffect(() => {
@@ -148,16 +157,19 @@ const SelectCompletion = () => {
 
     // 지도 로드 후 약간의 딜레이를 주고 마커 추가
     const timer = setTimeout(() => {
-      // 각 장소마다 마커 추가
+      // 모든 마커를 한번에 추가
       places.forEach((place, index) => {
-        setTimeout(() => {
-          addMarkerByAddress(place);
-        }, index * 500); // 0.5초 간격으로 순차적으로 추가
+        addMarkerByAddress(place, index);
       });
+
+      // 모든 마커가 로드될 시간을 주고 중앙으로 이동
+      setTimeout(() => {
+        moveToCenter();
+      }, 2000);
     }, 1000); // 지도 로드 후 1초 대기
 
     return () => clearTimeout(timer);
-  }, [addMarkerByAddress, places]);
+  }, [addMarkerByAddress, places, moveToCenter]);
 
   return (
     <div className='flex flex-col h-[100dvh] -mx-5 px-5 bg-[#262626] max-h-[100dvh] '>
