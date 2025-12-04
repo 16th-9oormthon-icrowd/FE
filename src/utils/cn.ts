@@ -1,0 +1,15 @@
+import { type ClassValue, clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+/**
+ * 클래스명을 병합하는 유틸리티 함수
+ * clsx와 tailwind-merge를 결합하여 Tailwind CSS 클래스 충돌을 해결
+ *
+ * @example
+ * cn('px-2 py-1', 'px-4') // → 'py-1 px-4'
+ * cn('text-center', isActive && 'text-blue-500') // 조건부
+ * cn('btn', { 'btn-active': isActive }) // 객체 형태
+ */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}

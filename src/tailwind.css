@@ -1,0 +1,7 @@
+/* 1. 스타일 우선순위 정의 */
+@layer tw-theme, vapor, tw-utilities;
+@import '@vapor-ui/core/tailwind.css';
+
+/* 2. Tailwind CSS 연결 */
+@import 'tailwindcss/theme.css' layer(tw-theme);
+@import 'tailwindcss/utilities.css' layer(tw-utilities);
