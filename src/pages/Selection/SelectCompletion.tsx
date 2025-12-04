@@ -67,7 +67,7 @@ const SelectCompletion = () => {
           <p className='font-bold text-[18px] mb-[14px]'>관광지를 방문하고 사진을 업로드해보세요</p>
           <div className='flex-1 flex flex-col gap-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
             {testPlaces.map((place, index) => (
-              <RecommendPlace key={index} />
+              <RecommendPlace key={index} placeName={place.placeName || place.address} address={place.address} />
             ))}
           </div>
         </div>
