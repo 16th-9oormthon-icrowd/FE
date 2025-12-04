@@ -31,6 +31,7 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
   const mapInstance = useRef<unknown>(null);
   const markersRef = useRef<unknown[]>([]);
   const infowindowsRef = useRef<unknown[]>([]);
+  const markerIndexMap = useRef<Map<number, unknown>>(new Map()); // 인덱스와 마커 매핑
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -175,8 +176,33 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
     });
   }, [options?.markers]);
 
-  // 주소로 마커 추가하는 함수
-  const addMarkerByAddress = useCallback((placeData: PlaceData) => {
+  // 마커 색상 변경 함수
+  const updateMarkerColor = useCallback((index: number, isSelected: boolean) => {
+    if (!window.kakao || !window.kakao.maps) return;
+
+    const marker = markerIndexMap.current.get(index);
+    if (!marker) return;
+
+    // 선택된 경우 빨간색, 선택 해제된 경우 기본 색상
+    const imageSrc = isSelected
+      ? 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_red.png'
+      : 'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker.png';
+
+    const kakaoMaps = window.kakao.maps as typeof window.kakao.maps & {
+      Size: new (width: number, height: number) => unknown;
+      Point: new (x: number, y: number) => unknown;
+      MarkerImage: new (src: string, size: unknown, options: unknown) => unknown;
+    };
+
+    const imageSize = new kakaoMaps.Size(24, 35);
+    const imageOption = { offset: new kakaoMaps.Point(12, 35) };
+    const markerImage = new kakaoMaps.MarkerImage(imageSrc, imageSize, imageOption);
+
+    (marker as { setImage: (image: unknown) => void }).setImage(markerImage);
+  }, []);
+
+  // 주소로 마커 추가하는 함수 (인덱스 포함)
+  const addMarkerByAddress = useCallback((placeData: PlaceData, index?: number) => {
     if (!mapInstance.current || !window.kakao || !window.kakao.maps) {
       console.error('지도가 초기화되지 않았습니다.');
       return;
@@ -233,6 +259,11 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
               position: position,
               title: placeInfo.title,
             });
+
+            // 인덱스가 제공된 경우 마커를 인덱스와 매핑
+            if (index !== undefined) {
+              markerIndexMap.current.set(index, marker);
+            }
 
             // 고유 ID 생성
             const overlayId = `overlay-${Date.now()}-${Math.random()}`;
@@ -307,5 +338,5 @@ export const useKakaoMap = (options?: KakaoMapOptions) => {
     });
   }, []);
 
-  return { mapContainer, mapInstance, addMarkerByAddress };
+  return { mapContainer, mapInstance, addMarkerByAddress, updateMarkerColor };
 };
