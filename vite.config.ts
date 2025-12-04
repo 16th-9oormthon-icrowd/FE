@@ -17,6 +17,8 @@ export default defineConfig({
         short_name: 'Jeju',
         description: 'Jeju Travel App',
         theme_color: '#ffffff',
+        start_url: '/question',
+        display: 'standalone',
         icons: [
           {
             src: 'vite.svg',
