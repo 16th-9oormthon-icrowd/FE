@@ -53,9 +53,14 @@ const SelectCompletion = () => {
             try {
               const content = await getVisitJejuContent(placeName);
               console.log(`${placeName} 주소:`, content.address);
+
+              // 주소에서 "제주특별자치도" 제거
+              const rawAddress = content.address || content.roadaddress || placeName;
+              const cleanAddress = rawAddress.replace(/^제주특별자치도\s*/, '');
+
               return {
                 placeName: content.title,
-                address: content.address || content.roadaddress || placeName,
+                address: cleanAddress,
               };
             } catch (error) {
               console.error(`${placeName} 정보 가져오기 실패:`, error);
@@ -121,6 +126,23 @@ const SelectCompletion = () => {
     return imageUrl;
   };
 
+  // 모든 이미지가 업로드되었는지 확인
+  const isAllImagesUploaded = () => {
+    if (!userInfo) return false;
+
+    // 실제로 표시되는 장소 개수
+    const validPlacesCount = places.filter(
+      (place) => place.placeName && place.placeName.trim() !== '',
+    ).length;
+
+    // 업로드된 이미지 개수 (빈 문자열이 아닌 것만)
+    const uploadedImagesCount = userInfo.placeImage.filter(
+      (img) => img && img.trim() !== '',
+    ).length;
+
+    return validPlacesCount > 0 && uploadedImagesCount >= validPlacesCount;
+  };
+
   useEffect(() => {
     if (places.length === 0) return;
 
@@ -145,7 +167,12 @@ const SelectCompletion = () => {
             {isLoading ? '로딩 중...' : userInfo ? `${userInfo.name}님` : '사용자'} <br />
             제주도 여행을 떠나볼까요?
           </p>
-          <button className='w-[160px] h-10 bg-[#ffffff]/[0.32] rounded-[12px]'>여행 완료</button>
+          <button
+            disabled={!isAllImagesUploaded()}
+            className='w-[160px] h-10 bg-white rounded-[12px] disabled:cursor-not-allowed disabled:bg-[#ffffff]/[0.32]'
+          >
+            여행 완료
+          </button>
         </div>
         <div className='w-[103px] h-[110px] bg-gray-900'></div>
       </div>
