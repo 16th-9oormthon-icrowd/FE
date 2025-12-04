@@ -174,6 +174,9 @@ const Question = () => {
         // 추천 장소 데이터를 Home으로 전달
         const recommendedPlaces = response.data?.recommendedPlace || [];
 
+        // localStorage에 사용자 이름 저장
+        localStorage.setItem('userName', nickname.trim());
+
         navigate('/', {
           state: {
             recommendedPlaces,
@@ -190,6 +193,8 @@ const Question = () => {
           // CORS 오류로 인한 네트워크 에러인 경우, 일단 성공으로 처리
           // (실제로는 서버에서 201 Created를 반환했을 수 있음)
           console.warn('CORS 오류로 응답을 받지 못했지만, 서버 요청은 성공했을 수 있습니다.');
+          // localStorage에 사용자 이름 저장
+          localStorage.setItem('userName', nickname.trim());
           navigate('/', {
             state: {
               recommendedPlaces: [],
