@@ -31,6 +31,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        maximumFileSizeToCacheInBytes: 6 * 1024 * 1024, // 6MB (가장 큰 파일이 5.06MB)
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*\.goorm\.training\/api\/.*/i,
