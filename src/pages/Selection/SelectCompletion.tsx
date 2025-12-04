@@ -170,6 +170,30 @@ const SelectCompletion = () => {
     return validPlacesCount > 0 && uploadedImagesCount >= validPlacesCount;
   };
 
+  // 업로드된 이미지 개수에 따라 표시할 SVG 레이어 결정
+  const getUploadedImagesCount = (): number => {
+    if (!userInfo) return 0;
+    return userInfo.placeImage.filter((img) => img && img.trim() !== '').length;
+  };
+
+  // 업로드된 이미지 개수에 따라 표시할 질문 ID 배열 반환
+  const getVisibleQuestionIds = (): number[] => {
+    const uploadedCount = getUploadedImagesCount();
+    const questionIds: number[] = [];
+
+    // 업로드된 이미지 개수에 따라 질문 ID 추가
+    // index 0 (background) -> 1번 질문
+    // index 1 (top) -> 2번 질문
+    // index 2 (bottom) -> 3번 질문
+    // index 3 (accessory) -> 4번 질문
+    if (uploadedCount >= 1) questionIds.push(1);
+    if (uploadedCount >= 2) questionIds.push(2);
+    if (uploadedCount >= 3) questionIds.push(3);
+    if (uploadedCount >= 4) questionIds.push(4);
+
+    return questionIds;
+  };
+
   // API 응답 값을 A, B, C로 변환
   const mapApiValueToAnswer = (
     value: string,
@@ -326,29 +350,59 @@ const SelectCompletion = () => {
         <div className='relative w-[103px] h-[110px] flex-shrink-0'>
           {userInfo && (
             <>
-              {/* 1번 질문 SVG (동서남) - z-0, goorm보다 아래 */}
+              {/* 업로드된 이미지 개수에 따라 동적으로 표시되는 질문 SVG들 */}
               {(() => {
-                const answer = mapApiValueToAnswer(userInfo.background, 'background');
-                const svg = getQuestionSVG(1, answer);
-                return svg ? (
-                  <div className='absolute inset-0 flex items-center justify-center z-0'>
-                    <motion.img
-                      src={svg}
-                      alt='지역 이미지'
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                      className='w-full h-full object-contain'
-                      style={{
-                        border: '1px solid rgba(255, 255, 255, 0.12)',
-                        borderRadius: '16px',
-                      }}
-                    />
-                  </div>
-                ) : null;
+                const visibleQuestionIds = getVisibleQuestionIds();
+
+                return visibleQuestionIds.map((questionId) => {
+                  let answer: string | null = null;
+
+                  // 질문 ID에 따라 답변 가져오기
+                  if (questionId === 1) {
+                    answer = mapApiValueToAnswer(userInfo.background, 'background');
+                  } else if (questionId === 2) {
+                    answer = mapApiValueToAnswer(userInfo.personality, 'personality');
+                  } else if (questionId === 3) {
+                    answer = mapApiValueToAnswer(userInfo.activity, 'activity');
+                  } else if (questionId === 4) {
+                    answer = mapApiValueToAnswer(userInfo.worth, 'worth');
+                  }
+
+                  const svg = getQuestionSVG(questionId, answer);
+
+                  if (!svg) return null;
+
+                  // z-index: 1번 질문은 z-0, 나머지는 z-10 + (questionId * 10)
+                  const zIndex = questionId === 1 ? 0 : 10 + (questionId - 1) * 10;
+
+                  return (
+                    <div
+                      key={questionId}
+                      className='absolute inset-0 flex items-center justify-center'
+                      style={{ zIndex }}
+                    >
+                      <motion.img
+                        src={svg}
+                        alt={`${questionId}번 질문 이미지`}
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.3 }}
+                        className='w-full h-full object-contain'
+                        style={
+                          questionId === 1
+                            ? {
+                                border: '1px solid rgba(255, 255, 255, 0.12)',
+                                borderRadius: '16px',
+                              }
+                            : {}
+                        }
+                      />
+                    </div>
+                  );
+                });
               })()}
 
-              {/* goorm SVG 이미지 - z-10 */}
+              {/* goorm SVG 이미지 - 항상 표시, z-10 */}
               <div className='absolute inset-0 flex items-center justify-center z-10'>
                 <motion.img
                   src={goormSVG}
@@ -359,60 +413,6 @@ const SelectCompletion = () => {
                   className='w-full h-full object-contain'
                 />
               </div>
-
-              {/* 2번 질문 SVG - z-20, goorm보다 위 */}
-              {(() => {
-                const answer = mapApiValueToAnswer(userInfo.personality, 'personality');
-                const svg = getQuestionSVG(2, answer);
-                return svg ? (
-                  <div className='absolute inset-0 flex items-center justify-center z-20'>
-                    <motion.img
-                      src={svg}
-                      alt='2번 질문 이미지'
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                      className='w-full h-full object-contain'
-                    />
-                  </div>
-                ) : null;
-              })()}
-
-              {/* 3번 질문 SVG - z-30 */}
-              {(() => {
-                const answer = mapApiValueToAnswer(userInfo.activity, 'activity');
-                const svg = getQuestionSVG(3, answer);
-                return svg ? (
-                  <div className='absolute inset-0 flex items-center justify-center z-30'>
-                    <motion.img
-                      src={svg}
-                      alt='3번 질문 이미지'
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                      className='w-full h-full object-contain'
-                    />
-                  </div>
-                ) : null;
-              })()}
-
-              {/* 4번 질문 SVG - z-40 */}
-              {(() => {
-                const answer = mapApiValueToAnswer(userInfo.worth, 'worth');
-                const svg = getQuestionSVG(4, answer);
-                return svg ? (
-                  <div className='absolute inset-0 flex items-center justify-center z-40'>
-                    <motion.img
-                      src={svg}
-                      alt='4번 질문 이미지'
-                      initial={{ opacity: 0, scale: 0.9 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ duration: 0.3 }}
-                      className='w-full h-full object-contain'
-                    />
-                  </div>
-                ) : null;
-              })()}
             </>
           )}
         </div>

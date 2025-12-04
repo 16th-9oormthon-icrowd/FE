@@ -232,11 +232,11 @@ const Home = () => {
     <div className='h-[100dvh] max-h-[100dvh] flex flex-col'>
       <div className='flex flex-col py-8'>
         <p className='text-2xl font-bold leading-normal mb-3'>
-          나의 취향으로 고른
+          {state?.userName ? `${state.userName}님의 취향에 맞는` : '나의 취향에 맞는'}
           <br />
           새로운 제주를 준비했어요
         </p>
-        <p className='text-sm text-gray-500  '>딱 4곳만 선택해 여행의 시작을 완성하세요</p>
+        <p className='text-sm text-gray-500  '>제주 로컬 관광지 4곳을 선택해 여행이 시작됩니다</p>
       </div>
       <div
         ref={mapContainer}
