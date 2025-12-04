@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Flex, VStack, TextInput, Button } from '@vapor-ui/core';
+import { useNavigate } from 'react-router-dom';
 
 interface Question {
   id: number;
@@ -61,6 +62,7 @@ const questions: Question[] = [
 ];
 
 const Question = () => {
+  const navigate = useNavigate();
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [answers, setAnswers] = useState<string[]>([]);
   const [nickname, setNickname] = useState('');
@@ -96,7 +98,7 @@ const Question = () => {
       newAnswers[currentQuestionIndex] = nickname.trim();
       setAnswers(newAnswers);
       console.log('모든 답변:', newAnswers);
-      // 여기에 결과 페이지로 이동하는 로직을 추가할 수 있습니다
+      navigate('/onboarding/completion');
     }
   };
 
