@@ -4,6 +4,23 @@ import { Box, Flex, VStack, TextInput, Button } from '@vapor-ui/core';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/api';
 import { AxiosError } from 'axios';
+import 기본SVG from '../../assets/기본.svg';
+import eastSVG from '../../assets/east.svg';
+import westSVG from '../../assets/west.svg';
+import southSVG from '../../assets/south.svg';
+import goormSVG from '../../assets/goorm.svg';
+// 2번 질문 SVG
+import question2_1SVG from '../../assets/1/1.svg';
+import question2_2SVG from '../../assets/1/2.svg';
+import question2_3SVG from '../../assets/1/3.svg';
+// 3번 질문 SVG
+import question3_1SVG from '../../assets/2/1.svg';
+import question3_2SVG from '../../assets/2/2.svg';
+import question3_3SVG from '../../assets/2/3.svg';
+// 4번 질문 SVG
+import question4_1SVG from '../../assets/3/1.svg';
+import question4_2SVG from '../../assets/3/2.svg';
+import question4_3SVG from '../../assets/3/3.svg';
 
 interface Question {
   id: number;
@@ -217,10 +234,89 @@ const Question = () => {
     }
   };
 
+  // 선택된 지역에 따라 배경색 결정
+  const getBackgroundGradient = (): string => {
+    const selectedRegion = answers[0]; // 첫 번째 질문의 답변 (지역 선택)
+
+    switch (selectedRegion) {
+      case 'A': // 동부 제주
+        return 'linear-gradient(180deg, #C76E54 0%, #E47F62 100%)';
+      case 'B': // 서부 제주
+        return 'linear-gradient(180deg, #051A30 0%, #104174 100%)';
+      case 'C': // 남부 제주
+        return 'linear-gradient(180deg, #3C82B4 0%, #4592CA 100%)';
+      default: // 기본 배경
+        return 'linear-gradient(180deg, #262626 0%, #3A3A3A 100%)';
+    }
+  };
+
+  // 특정 질문의 SVG 이미지 가져오기
+  const getQuestionSVG = (questionId: number, answer: string | undefined): string | null => {
+    if (!answer) return null;
+
+    // 1번 질문은 지역 선택 SVG 사용
+    if (questionId === 1) {
+      switch (answer) {
+        case 'A':
+          return eastSVG;
+        case 'B':
+          return westSVG;
+        case 'C':
+          return southSVG;
+        default:
+          return 기본SVG;
+      }
+    }
+
+    // 2번 질문
+    if (questionId === 2) {
+      switch (answer) {
+        case 'A':
+          return question2_1SVG;
+        case 'B':
+          return question2_2SVG;
+        case 'C':
+          return question2_3SVG;
+        default:
+          return null;
+      }
+    }
+
+    // 3번 질문
+    if (questionId === 3) {
+      switch (answer) {
+        case 'A':
+          return question3_1SVG;
+        case 'B':
+          return question3_2SVG;
+        case 'C':
+          return question3_3SVG;
+        default:
+          return null;
+      }
+    }
+
+    // 4번 질문
+    if (questionId === 4) {
+      switch (answer) {
+        case 'A':
+          return question4_1SVG; // question4_1SVG가 없을 경우 기본 SVG 사용
+        case 'B':
+          return question4_2SVG;
+        case 'C':
+          return question4_3SVG;
+        default:
+          return null;
+      }
+    }
+
+    return null;
+  };
+
   return (
     <Box
       className='relative min-h-screen w-full px-5 py-5'
-      style={{ background: 'linear-gradient(0deg, #448AC5 0%, #A5CFE5 100%)' }}
+      style={{ background: getBackgroundGradient() }}
       display='flex'
       flexDirection='column'
     >
@@ -292,6 +388,121 @@ const Question = () => {
             </motion.h2>
           </AnimatePresence>
         </VStack>
+      )}
+
+      {/* 모든 질문 SVG 이미지 - bottom 45% 위치, z-index 순서: 기본/1번 < goorm < 2번 < 3번 < 4번 */}
+      {currentQuestion.type === 'choice' && (
+        <>
+          {/* 기본 SVG - z-0, goorm보다 아래, 동서남 선택 전에만 표시 */}
+          {!answers[0] && (
+            <Box
+              className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-0'
+              style={{ pointerEvents: 'none' }}
+            >
+              <motion.img
+                key='default-svg'
+                src={기본SVG}
+                alt='기본 이미지'
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className='max-w-[300px] max-h-[300px] w-auto h-auto'
+              />
+            </Box>
+          )}
+
+          {/* 1번 질문 SVG (동서남) - z-0, goorm보다 아래 */}
+          {answers[0] && getQuestionSVG(1, answers[0]) && (
+            <Box
+              className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-0'
+              style={{ pointerEvents: 'none' }}
+            >
+              <motion.img
+                key={`question-1-${answers[0]}`}
+                src={getQuestionSVG(1, answers[0])!}
+                alt='지역 이미지'
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className='max-w-[300px] max-h-[300px] w-auto h-auto'
+                style={{
+                  border: '1px solid rgba(255, 255, 255, 0.12)',
+                  borderRadius: '16px',
+                }}
+              />
+            </Box>
+          )}
+
+          {/* goorm SVG 이미지 - z-10 */}
+          <Box
+            className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-10'
+            style={{ pointerEvents: 'none' }}
+          >
+            <motion.img
+              src={goormSVG}
+              alt='구름 이미지'
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.3, ease: 'easeInOut' }}
+              className='max-w-[220px] max-h-[234px] w-auto h-auto'
+            />
+          </Box>
+
+          {/* 2번 질문 SVG - z-20, goorm보다 위 */}
+          {answers[1] && getQuestionSVG(2, answers[1]) && (
+            <Box
+              className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-20'
+              style={{ pointerEvents: 'none' }}
+            >
+              <motion.img
+                key={`question-2-${answers[1]}`}
+                src={getQuestionSVG(2, answers[1])!}
+                alt='2번 질문 이미지'
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className='max-w-[300px] max-h-[300px] w-auto h-auto'
+              />
+            </Box>
+          )}
+
+          {/* 3번 질문 SVG - z-30 */}
+          {answers[2] && getQuestionSVG(3, answers[2]) && (
+            <Box
+              className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-30'
+              style={{ pointerEvents: 'none' }}
+            >
+              <motion.img
+                key={`question-3-${answers[2]}`}
+                src={getQuestionSVG(3, answers[2])!}
+                alt='3번 질문 이미지'
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className='max-w-[300px] max-h-[300px] w-auto h-auto'
+              />
+            </Box>
+          )}
+
+          {/* 4번 질문 SVG - z-40 */}
+          {answers[3] && getQuestionSVG(4, answers[3]) && (
+            <Box
+              className='absolute left-1/2 bottom-[45%] -translate-x-1/2 z-40'
+              style={{ pointerEvents: 'none' }}
+            >
+              <motion.img
+                key={`question-4-${answers[3]}`}
+                src={getQuestionSVG(4, answers[3])!}
+                alt='4번 질문 이미지'
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+                className='max-w-[300px] max-h-[300px] w-auto h-auto'
+              />
+            </Box>
+          )}
+        </>
       )}
 
       {/* 선택지 영역 - 하단에 여백 */}
