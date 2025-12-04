@@ -29,6 +29,25 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.goorm\.training\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60, // 1시간
+              },
+              networkTimeoutSeconds: 10,
+            },
+          },
+        ],
+      },
+      // 개발 환경에서 service worker 비활성화 옵션
+      devOptions: {
+        enabled: false, // 개발 중에는 service worker 비활성화
+        type: 'module',
       },
     }),
   ],
