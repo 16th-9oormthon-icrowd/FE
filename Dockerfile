@@ -1,5 +1,4 @@
-# Build stage
-FROM node:20-alpine AS builder
+FROM node:20-alpine
 
 WORKDIR /app
 
@@ -24,22 +23,15 @@ RUN npm run build
 # Verify build output exists
 RUN test -d dist && test -f dist/index.html || (echo "Build failed: dist directory or index.html not found" && exit 1)
 
-# Production stage
-FROM nginx:alpine
+# 비root 사용자 생성 및 권한 설정
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S viteuser -u 1001 && \
+    chown -R viteuser:nodejs /app
 
-# Copy built files from builder stage
-COPY --from=builder /app/dist /usr/share/nginx/html
+USER viteuser
 
-# Copy nginx configuration from build context
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Expose port (Vite preview 기본 포트는 4173이지만 3000 사용)
+EXPOSE 3000
 
-# Expose port 80
-EXPOSE 80
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/health || exit 1
-
-# Explicitly set entrypoint and command for nginx
-ENTRYPOINT ["nginx"]
-CMD ["-g", "daemon off;"]
+# Vite preview 서버 실행
+CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "3000"]
