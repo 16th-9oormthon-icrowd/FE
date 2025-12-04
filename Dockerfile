@@ -1,45 +1,39 @@
-# Build stage
+# --------------------------
+# Build Stage
+# --------------------------
 FROM node:20-alpine AS builder
-
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
-
 # Install dependencies
-RUN npm ci --only=production=false
+COPY package*.json ./
+RUN npm ci
 
-# Copy source code
+# Copy all source files
 COPY . .
 
-# Define and pass build-time environment variables
+# --- Vite 빌드용 ARG (빌드 시 docker build --build-arg 로 전달해야 함) ---
 ARG VITE_BASE_URL
 ARG VITE_KAKAO_JAVASCRIPT_KEY
-ENV VITE_BASE_URL=${VITE_BASE_URL}
-ENV VITE_KAKAO_JAVASCRIPT_KEY=${VITE_KAKAO_JAVASCRIPT_KEY}
 
-# Build the application
+# Vite는 빌드 시점에만 ENV를 읽기 때문에 ENV로 전달
+ENV VITE_BASE_URL=$VITE_BASE_URL
+ENV VITE_KAKAO_JAVASCRIPT_KEY=$VITE_KAKAO_JAVASCRIPT_KEY
+
+# Build the Vite app
 RUN npm run build
 
-# Verify build output exists
-RUN test -d dist && test -f dist/index.html || (echo "Build failed: dist directory or index.html not found" && exit 1)
 
-# Production stage
+# --------------------------
+# Production (Nginx)
+# --------------------------
 FROM nginx:alpine
 
-# Copy built files from builder stage
+# Copy built files
 COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Copy nginx configuration from build context
+# Copy nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port 80
 EXPOSE 80
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/health || exit 1
-
-# Explicitly set entrypoint and command for nginx
-ENTRYPOINT ["nginx"]
-CMD ["-g", "daemon off;"]
+CMD ["nginx", "-g", "daemon off;"]
