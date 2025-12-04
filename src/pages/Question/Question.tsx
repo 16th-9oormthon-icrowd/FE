@@ -159,6 +159,9 @@ const Question = () => {
         // 추천 장소 데이터는 response.data에 포함되어 있을 것으로 예상
         // 필요시 상태 관리나 전역 상태에 저장
 
+        // localStorage에 사용자 이름 저장
+        localStorage.setItem('userName', nickname.trim());
+
         navigate('/');
       } catch (error) {
         console.error('사용자 생성 실패:', error);
@@ -170,6 +173,8 @@ const Question = () => {
           // CORS 오류로 인한 네트워크 에러인 경우, 일단 성공으로 처리
           // (실제로는 서버에서 201 Created를 반환했을 수 있음)
           console.warn('CORS 오류로 응답을 받지 못했지만, 서버 요청은 성공했을 수 있습니다.');
+          // localStorage에 사용자 이름 저장
+          localStorage.setItem('userName', nickname.trim());
           navigate('/');
         } else {
           // 다른 에러인 경우
