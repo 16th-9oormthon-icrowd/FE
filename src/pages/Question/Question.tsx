@@ -16,41 +16,41 @@ const questions: Question[] = [
   {
     id: 1,
     type: 'choice',
-    title: '제주에 도착했어요! 공항을 나서는 순간, 가장 먼저 하고 싶은 건 무엇인가요?',
+    title: '이번엔 어느 지역을 탐험할까요?',
     options: [
-      { label: '바다를 향해 곧장 달려가 시원한 바람을 맞기', value: 'A' },
-      { label: '근처 맛집을 찾아 지도부터 켜보기', value: 'B' },
-      { label: '친구들과 인증샷 찍으며 활기차게 시작하기', value: 'C' },
+      { label: '동부 제주', value: 'A' },
+      { label: '서부 제주', value: 'B' },
+      { label: '남부 제주', value: 'C' },
     ],
   },
   {
     id: 2,
     type: 'choice',
-    title: '제주 여행 중 하루를 보내는 당신의 스타일은?',
+    title: '평소 나는 어떤 사람인가요?',
     options: [
-      { label: '오름을 오르며 땀 흘리는 활동적인 하루', value: 'A' },
-      { label: '카페에서 책을 읽거나 사진을 찍으며 여유로운 하루', value: 'B' },
-      { label: '시장, 맛집 등 다양한 곳을 빠르게 돌아다니는 하루', value: 'C' },
+      { label: '새로운 걸 시도하는 걸 좋아해요', value: 'A' },
+      { label: '익숙하고 편안한 걸 선호해요', value: 'B' },
+      { label: '사람들과 소통하는 걸 즐겨요', value: 'C' },
     ],
   },
   {
     id: 3,
     type: 'choice',
-    title: '숙소를 고를 때 가장 중요하게 생각하는 건 무엇인가요?',
+    title: '평소 어떤 공간을 좋아하나요?',
     options: [
-      { label: '예쁜 뷰와 감성 인테리어', value: 'A' },
-      { label: '위치와 이동의 편리함', value: 'B' },
-      { label: '저렴하고 깔끔한 가성비', value: 'C' },
+      { label: '활동적이고 에너지 넘치는 곳', value: 'A' },
+      { label: '조용하고 사색적인 곳', value: 'B' },
+      { label: '창의적이고 영감을 주는 곳', value: 'C' },
     ],
   },
   {
     id: 4,
     type: 'choice',
-    title: '제주 여행에서 가장 중요하게 생각하는 것은 무엇인가요?',
+    title: '여행지에서 가장 중요하게 생각하는 건?',
     options: [
-      { label: '맛집 탐방과 현지 음식 체험', value: 'A' },
-      { label: '자연 경관과 힐링', value: 'B' },
-      { label: '친구들과의 추억 만들기', value: 'C' },
+      { label: '기록하고 공유하기', value: 'A' },
+      { label: '자연과 환경을 존중하는 곳', value: 'B' },
+      { label: '그곳만의 이야기가 있는 곳', value: 'C' },
     ],
   },
   {
@@ -109,7 +109,7 @@ const Question = () => {
   return (
     <Box
       className='relative min-h-screen w-full px-5 py-5'
-      backgroundColor='#b9b9b9'
+      style={{ background: 'linear-gradient(0deg, #448AC5 0%, #A5CFE5 100%)' }}
       display='flex'
       flexDirection='column'
     >
@@ -197,29 +197,27 @@ const Question = () => {
                     transition={{ duration: 0.2, delay: 0.2 + index * 0.05 }}
                     className={`
                       relative flex items-center gap-3 h-14 w-full px-6 py-2 rounded-v-400
-                      bg-white
+                      bg-white/40
                       transition-all duration-200
-                      ${isSelected ? 'border-2 border-v-primary' : 'border-0'}
+                      ${isSelected ? 'border-2 border-sky-500' : 'border-0'}
                       hover:shadow-md
                     `}
                   >
                     <p
                       className={`
-                        flex-1 text-center font-v-400 leading-6 text-base tracking-[-0.1px] opacity-100 left-3
-                        ${isSelected ? 'text-blue-600' : 'text-[#5d5d5d]'}
+                        flex-1 text-center font-v-400 leading-6 text-base tracking-[-0.1px] text-white
                       `}
-                      style={isSelected ? { color: 'var(--vapor-color-primary-600, #2563eb)' } : {}}
                     >
                       {option.label}
                     </p>
                     <Box
                       className={`
-                        shrink-0 size-6 rounded-full border border-v-border-normal
-                        flex justify-center
-                        ${isSelected ? 'bg-v-primary border-v-primary ' : 'bg-white'}
+                        shrink-0 size-6 rounded-full border-2
+                        flex justify-center items-center
+                        ${isSelected ? 'bg-blue-500 border-blue-500' : 'bg-white/40 border-white/60'}
                       `}
                     >
-                      {isSelected && <Box className='size-4 rounded-full bg-v-gray-900' />}
+                      {isSelected && <Box className='size-3 rounded-full bg-white' />}
                     </Box>
                   </motion.button>
                 );
@@ -281,7 +279,7 @@ const Question = () => {
                       }
                     }}
                     size='md'
-                    className='h-14 rounded-v-300 text-center'
+                    className='h-14 rounded-v-300 text-center bg-white/40'
                   />
                 </VStack>
 
@@ -294,11 +292,10 @@ const Question = () => {
                   }}
                 >
                   <Button
-                    colorPalette='primary'
                     size='lg'
                     onClick={handleNameSubmit}
                     disabled={nickname.trim().length === 0}
-                    className='w-full h-14 bg-[#e66f00] hover:bg-[#d46200] rounded-v-400 font-v-500'
+                    className='w-full h-14 rounded-v-400 font-v-500 bg-[#000000] hover:bg-grey-900'
                   >
                     작성완료
                   </Button>
