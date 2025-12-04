@@ -12,6 +12,12 @@ RUN npm ci
 # Copy source code
 COPY . .
 
+# Define and pass build-time environment variables
+ARG VITE_BASE_URL
+ARG VITE_KAKAO_JAVASCRIPT_KEY
+ENV VITE_BASE_URL=${VITE_BASE_URL}
+ENV VITE_KAKAO_JAVASCRIPT_KEY=${VITE_KAKAO_JAVASCRIPT_KEY}
+
 # Build the application
 RUN npm run build
 
