@@ -15,11 +15,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'vite.svg'],
       manifest: {
-        name: 'Jeju App',
-        short_name: 'Jeju',
-        description: 'Jeju Travel App',
-        theme_color: '#ffffff',
-        start_url: '/question',
+        name: 'Hidden Jeju',
+        short_name: 'Hidden Jeju',
+        description: 'Hidden Jeju Travel App',
+        theme_color: '#262626',
+        start_url: '/',
         display: 'standalone',
         icons: [
           {
