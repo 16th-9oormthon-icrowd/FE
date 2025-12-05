@@ -33,6 +33,7 @@ const SelectCompletion = () => {
   const [userInfo, setUserInfo] = useState<UserInfoResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [places, setPlaces] = useState<PlaceData[]>([]);
+  const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   // 마커 데이터를 useMemo로 감싸기
   const markers: MarkerData[] = useMemo(() => [], []);
@@ -123,6 +124,8 @@ const SelectCompletion = () => {
         return;
       }
 
+      setUploadingIndex(index);
+
       // 인덱스에 따라 character_type 결정
       const characterTypes: Array<'background' | 'top' | 'bottom' | 'accessory'> = [
         'background',
@@ -144,6 +147,8 @@ const SelectCompletion = () => {
     } catch (error) {
       console.error('이미지 업로드 실패:', error);
       alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setUploadingIndex(null);
     }
   };
 
@@ -428,7 +433,7 @@ const SelectCompletion = () => {
         <p className='font-bold text-[#000000] text-[18px]  mb-[14px]'>
           나만의 관광지를 지도로 확인하세요
         </p>
-        <div ref={mapContainer} className='w-full aspect-[67/40] rounded-[12px] mb-10'></div>
+        <div ref={mapContainer} className='w-full aspect-[67/30] rounded-[12px] mb-10'></div>
         <div className='flex-1 flex flex-col min-h-0'>
           <p className='font-bold text-[18px] mb-[14px]'>관광지를 방문하고 사진을 업로드해보세요</p>
           <div className='flexS-1 flex flex-col gap-4 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]'>
@@ -441,6 +446,7 @@ const SelectCompletion = () => {
                   address={place.address || ''}
                   onImageUpload={(file: File) => handleImageUpload(index, file)}
                   uploadedImage={getImageUrl(userInfo?.placeImage[index])}
+                  isUploading={uploadingIndex === index}
                 />
               ))}
           </div>
