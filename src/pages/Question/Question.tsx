@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Flex, VStack, TextInput, Button } from '@vapor-ui/core';
-import { CheckCircleIcon } from '@vapor-ui/icons';
+import { CheckCircleIcon, RefreshOutlineIcon } from '@vapor-ui/icons';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/api';
 import { AxiosError } from 'axios';
@@ -609,7 +609,7 @@ const Question = () => {
               transition={{ duration: 0.3, ease: 'easeInOut' }}
               className='w-full py-2'
             >
-              <VStack gap='$300' alignItems='stretch'>
+              <VStack gap='$150' alignItems='stretch'>
                 {/* 반가워 + 닉네임 영역 */}
                 <VStack
                   gap='$100'
@@ -654,11 +654,24 @@ const Question = () => {
                       borderColor: 'white',
                     }}
                   />
+
+                  {/* 다시 생성하기 버튼 */}
+                  <Box className='flex flex-col items-end justify-center mt-1.5'>
+                    <button
+                      onClick={() => setNickname(generateNickname())}
+                      className='flex items-center gap-1.5 h-8 px-0 py-0 rounded-v-300 hover:opacity-80 transition-opacity'
+                    >
+                      <RefreshOutlineIcon className='size-4 shrink-0 text-[#e1e1e1]' />
+                      <span className='text-[#e1e1e1] text-sm font-v-500 leading-[22px] tracking-[-0.1px]'>
+                        다시 생성하기
+                      </span>
+                    </button>
+                  </Box>
                 </VStack>
 
                 {/* 작성완료 버튼 */}
                 <Box
-                  className='px-5 vapor-size-space-250 vapor-size-space-250 py-5'
+                  className='px-5 vapor-size-space-250 vapor-size-space-250 pt-2 pb-5'
                   style={{
                     paddingLeft: 'var(--vapor-size-space-250, 20px)',
                     paddingRight: 'var(--vapor-size-space-250, 20px)',

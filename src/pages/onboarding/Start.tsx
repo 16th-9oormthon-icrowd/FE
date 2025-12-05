@@ -21,7 +21,7 @@ const Start = () => {
           당신의 취향으로 발견하다
         </span>
         <span className='font-normal text-[16px]'>
-          검색하지 않아도 숨어있는 제주도를 찾아드려요
+          검색하지 않고도 숨어있는 제주도를 찾아드려요
         </span>
       </p>
       <button
