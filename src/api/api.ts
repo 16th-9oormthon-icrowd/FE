@@ -92,6 +92,3 @@ export const getVisitJejuContent = async (title: string): Promise<VisitJejuConte
 };
 
 export default api;
-
-// 타입 명시적 export
-export type { UserInfoResponse, UploadImageResponse, VisitJejuContent };

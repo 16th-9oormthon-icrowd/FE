@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import startBg from '../../assets/start.png';
+import startBg from '../../assets/start.jpg';
 
 const Start = () => {
   const navigate = useNavigate();

@@ -2,7 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { domToPng } from 'modern-screenshot';
 import { getUserInfo } from '../../api/api';
 import type { UserInfoResponse } from '../../api/api';
-import startBg from '../../assets/start.png';
+import startBg from '../../assets/start.jpg';
 import Card from '../../assets/card.png';
 
 // 배경 이미지
@@ -134,17 +134,17 @@ const Final = () => {
       style={{ backgroundImage: `url(${startBg})` }}
     >
       <div className='flex flex-col items-center pt-[calc(100vh/3-200px)]'>
-        <p className='px-5 text-white font-bold text-[24px] text-center leading-normal mb-8'>
+        <p className='px-5 text-white font-bold text-[24px] text-center leading-normal mb-5'>
           제주도 여행 완료!
           <br />
           다음 여행에도 저를 찾아주세요!
         </p>
 
         <div ref={cardRef} className='mt-8 relative'>
-          <img src={Card} alt='여행 카드' className='w-[295px] h-[474px] rounded-[21px]' />
+          <img src={Card} alt='여행 카드' className='w-[270px] h-[433px] rounded-[21px]' />
 
           {/* 카드 내부 이미지 영역 - 5개 이미지를 같은 위치에 레이어로 쌓기 */}
-          <div className='absolute left-[30px] top-[71px] w-[235px] h-[235px] rounded-[12px] overflow-hidden'>
+          <div className='absolute left-[27px] top-[64px] w-[215px] h-[215px] rounded-[12px] overflow-hidden'>
             {userInfo && (
               <>
                 {/* 1. Background 이미지 (최하단) */}
