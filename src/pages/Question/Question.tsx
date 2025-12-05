@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Box, Flex, VStack, TextInput, Button } from '@vapor-ui/core';
 import { CheckCircleIcon, RefreshOutlineIcon } from '@vapor-ui/icons';
@@ -111,6 +111,7 @@ const Question = () => {
   const [answers, setAnswers] = useState<string[]>([]);
   const [nickname, setNickname] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const hasGeneratedNickname = useRef(false);
 
   const currentQuestion = questions[currentQuestionIndex];
   // 질문 번호 기준으로 표시 (1부터 시작)
@@ -236,12 +237,13 @@ const Question = () => {
     }
   };
 
-  // 닉네임 입력 화면으로 전환될 때 자동으로 닉네임 생성
+  // 닉네임 입력 화면으로 전환될 때 자동으로 닉네임 생성 (한 번만)
   useEffect(() => {
-    if (currentQuestion.type === 'text' && !nickname) {
+    if (currentQuestion.type === 'text' && !hasGeneratedNickname.current) {
       setNickname(generateNickname());
+      hasGeneratedNickname.current = true;
     }
-  }, [currentQuestion.type, nickname]);
+  }, [currentQuestion.type]);
 
   // 선택된 지역에 따라 배경색 결정
   const getBackgroundGradient = (): string => {
