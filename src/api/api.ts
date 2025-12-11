@@ -1,7 +1,19 @@
 import axios from 'axios';
 
+// baseURL 설정: 환경 변수가 있으면 사용, 없으면 현재 프로토콜과 호스트 사용
+// Mixed Content 오류 방지를 위해 현재 페이지의 프로토콜을 사용
+const getBaseURL = () => {
+  const envURL = import.meta.env.VITE_BASE_URL;
+  if (envURL) return envURL;
+  // 환경 변수가 없으면 현재 페이지의 origin + /api 사용 (HTTPS 페이지에서는 HTTPS 사용)
+  if (typeof window !== 'undefined') {
+    return `${window.location.origin}/api`;
+  }
+  return '';
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_BASE_URL,
+  baseURL: getBaseURL(),
   // CORS 오류 방지: withCredentials는 백엔드가 특정 origin을 허용할 때만 사용
   // 개발 환경에서는 false로 설정 (프로덕션에서 필요시 true로 변경)
   withCredentials: false,

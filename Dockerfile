@@ -1,45 +1,48 @@
-FROM node:20-alpine
+# 멀티스테이지 빌드로 이미지 크기 최적화
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
+# 의존성 파일만 먼저 복사 (레이어 캐싱 최적화)
+# package.json과 package-lock.json이 변경되지 않으면 이 레이어는 캐시에서 재사용됨
 COPY package*.json ./
-RUN npm ci
 
-# Copy all source files
-COPY . .
-
-# --- Vite 빌드용 ARG (빌드 시 docker build --build-arg 로 전달해야 함) ---
+# 빌드용 ARG (빌드 시 docker build --build-arg 로 전달)
+# ARG는 빌드 시점에만 사용되므로 의존성 설치 전에 선언
 ARG VITE_API_BASE_URL
-ARG VITE_VITE_KAKAO_JAVASCRIPT_KEY
+ARG VITE_KAKAO_JAVASCRIPT_KEY
 
 # Vite는 빌드 시점에만 ENV를 읽기 때문에 ENV로 전달
 ENV VITE_BASE_URL=${VITE_API_BASE_URL}
-ENV VITE_KAKAO_JAVASCRIPT_KEY=${VITE_VITE_KAKAO_JAVASCRIPT_KEY}
+ENV VITE_KAKAO_JAVASCRIPT_KEY=${VITE_KAKAO_JAVASCRIPT_KEY}
 
-# 환경 변수 확인 (빌드 전)
-# 주의: 빌드 로그에 민감한 정보가 출력됩니다
-RUN echo "=== 환경 변수 확인 ===" && \
-    echo "VITE_BASE_URL=$VITE_BASE_URL:-[설정되지 않음]}" && \
-    echo "VITE_KAKAO_JAVASCRIPT_KEY=${VITE_KAKAO_JAVASCRIPT_KEY:-[설정되지 않음]}" && \
-    if [ -n "$VITE_KAKAO_JAVASCRIPT_KEY" ]; then \
-      echo "✓ VITE_KAKAO_JAVASCRIPT_KEY 길이: $(echo -n "$VITE_KAKAO_JAVASCRIPT_KEY" | wc -c)자"; \
-    fi && \
-    echo "======================"
+# 모든 의존성 설치 (개발 의존성 포함, 빌드에 필요)
+# 소스 코드 변경과 무관하게 의존성만 먼저 설치하여 캐시 효율성 향상
+RUN npm ci --ignore-scripts && \
+    npm cache clean --force
 
-# Build the Vite app
-RUN npm run build
+# 소스 코드 복사 (의존성 설치 후)
+# 소스 코드가 변경되어도 의존성이 같으면 위 레이어는 캐시에서 재사용됨
+COPY . .
 
+# 빌드 실행
+RUN npm run build && \
+    npm prune --production && \
+    rm -rf node_modules/.cache
 
-# 비root 사용자 생성 및 권한 설정
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S viteuser -u 1001 && \
-    chown -R viteuser:nodejs /app
+# 최종 런타임 이미지 (Nginx 사용으로 메모리 절약)
+FROM nginx:alpine
 
-USER viteuser
+# Nginx 설정 복사
+COPY nginx.conf /etc/nginx/conf.d/default.conf
 
-# Expose port (Vite preview 기본 포트는 4173이지만 3000 사용)
-EXPOSE 3000
+# 빌드된 정적 파일 복사
+COPY --from=builder /app/dist /usr/share/nginx/html
 
-# Vite preview 서버 실행
-CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "3000"]
+# Nginx는 기본적으로 비root 사용자로 실행됨
+
+# 포트 노출
+EXPOSE 80
+
+# Nginx 실행
+CMD ["nginx", "-g", "daemon off;"]
